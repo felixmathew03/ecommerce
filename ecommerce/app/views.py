@@ -2,15 +2,65 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
-from .models import Category, Product
+from .models import Category, Product, Customer
 from django.views.decorators.http import require_POST
+import bcrypt
+from django.contrib import messages
+
+def getuser(request):
+    user=False
+
+    if 'user' in request.session:
+            user=True
+    return user
 
 # Homepage view
 def index(request):
-    
-    return render(request, 'index.html')
+    category_id = request.GET.get('category')
+    if category_id:
+        products = Product.objects.filter(category_id=category_id)
+    else:
+        products = Product.objects.all()
+    categories=Category.objects.all()
+    return render(request, 'index.html',{
+        'products':products,
+        'categories':categories
+    })
 
-# Admin 
+def product_detail(request, pk):
+    product = get_object_or_404(Product, pk=pk)
+    return render(request, 'product_detail.html', {'product': product})
+
+#user section
+
+def signup(request):    
+    if request.method=="POST":
+        name=request.POST['name']
+        phno=request.POST['phno']
+        email=request.POST['email']
+        username=request.POST['username']
+        password=request.POST['password']
+        cnf_password=request.POST['cnf_password']
+
+        psw=password.encode('utf-8')
+        salt=bcrypt.gensalt()               #Password Hashing
+        psw_hashed=bcrypt.hashpw(psw,salt)
+
+        if password==cnf_password:
+            data=Customer.objects.create(cust_name=name,cust_phone=phno,cust_email=email,cust_username=username,cust_password=psw_hashed.decode('utf-8'))
+            data.save()
+            messages.success(request, "Account created successfully pls login to continue !")  # recorded
+        else:
+            messages.warning(request, "Password Doesn't match !")  # recorded
+        
+
+        return redirect(login)
+    else:
+        return render(request,"signup.html",{'user':getuser(request)})
+
+
+
+# Admin section
 def admin_login(request):
     if request.method == 'POST':
         username = request.POST['username']

@@ -18,4 +18,10 @@ class Product(models.Model):
 
     def __str__(self):
         return self.p_name
-    
+
+class Customer(models.Model):
+    cust_name=models.CharField(max_length=255)
+    cust_phone=models.IntegerField(max_length=10)
+    cust_email=models.EmailField(max_length=255,unique=True)
+    cust_username=models.CharField(max_length=255)
+    cust_password=models.TextField(max_length=255)

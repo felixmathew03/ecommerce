@@ -3,6 +3,53 @@
 {% block title %}Index{% endblock %}
 
 {% block content %}
-<h1 class="text-2xl font-bold mb-4">Index Page</h1>
+<div class="container mx-auto px-4">
 
+  <div class="flex flex-wrap -mx-4 py-2 h-[80vh]">
+    <!-- Categories Sidebar -->
+    <div class="w-full md:w-1/4 px-4   md:mb-0">
+      <h2 class="text-3xl font-bold mb-4 text-slate-700">Categories</h2>
+      <ul class="bg-white shadow rounded p-4 space-y-2">
+        <li>
+          <a href="{% url 'index' %}" class="text-blue-600 hover:underline">
+            All
+          </a>
+        </li>
+        {% for category in categories %}
+        <li>
+          <a href="{% url 'index' %}?category={{ category.id }}" class="text-blue-600 hover:underline">
+            {{ category.c_name }}
+          </a>
+        </li>
+        {% empty %}
+        <li>No categories found.</li>
+        {% endfor %}
+      </ul>
+    </div>
+
+    <!-- Products Grid -->
+    <div class="w-full h-full overflow-y-scroll  md:w-3/4 px-4">
+      <h2 class="text-3xl font-bold mb-4 text-slate-700 ">Products</h2>
+      <div class="h-6/7 grid grid-cols-1  sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for product in products %}
+        <div class="bg-white shadow rounded p-4 flex flex-col">
+          {% if product.p_image %}
+            <img src="{{ product.p_image.url }}" alt="{{ product.p_name }}" class="mb-4 rounded h-48 object-cover">
+          {% else %}
+            <div class="bg-gray-200 h-48 mb-4 rounded flex items-center justify-center text-gray-500">
+              No Image
+            </div>
+          {% endif %}
+          <h3 class="text-lg font-semibold">{{ product.p_name }}</h3>
+          <p class="text-gray-600 mb-2">Category: {{ product.category.c_name }}</p>
+          <p class="font-bold text-green-600">${{ product.p_price }}</p>
+          <a href="./product/{{product.pk}}" class="mt-auto inline-block text-blue-600 hover:underline">View Details</a>
+        </div>
+        {% empty %}
+        <p>No products available.</p>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
 {% endblock %}
