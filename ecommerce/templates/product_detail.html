@@ -37,9 +37,9 @@
           {% endif %}
         </p>
 
-        <button class="mt-4 bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 disabled:opacity-50" {% if product.p_stock == 0 %}disabled{% endif %}>
+        <a href="{% url 'buy_now' product.id %}" class="mt-4 bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 disabled:opacity-50" {% if product.p_stock == 0 %}disabled{% endif %}>
           Buy Now
-        </button>
+        </a>
       </div>
     </div>
   </div>

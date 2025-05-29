@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
-from .models import Category, Product, Customer
+from .models import Category, Product, Customer, OrderItem, Order
 from django.views.decorators.http import require_POST
 import bcrypt
 from django.contrib import messages
@@ -77,12 +77,89 @@ def customer_login(request):
         else:
             return render(request,"login.html",{'user':getuser(request)})
 
-def logout(request):
+def customer_logout(request):
     if getuser(request):
         del request.session['user']
         return redirect(customer_login)
     else:
         return redirect(customer_login)
+
+def customer_profile(request):
+    customer = get_object_or_404(Customer, cust_username=request.session['user'])
+    orders = Order.objects.filter(customer__cust_username=request.session['user']).order_by('-created_at')
+    return render(request, 'customer_profile.html', {'customer': customer,'orders':orders})
+
+def buy_now(request, product_id):
+    if not getuser(request):
+        messages.error(request, "You must be logged in to buy a product.")
+        return redirect('login')
+
+    # Get the logged-in customer
+    customer = get_object_or_404(Customer, cust_username=request.session['user'])
+
+    # Get the product
+    product = get_object_or_404(Product, pk=product_id)
+
+    # Optional: check for available stock here if needed
+
+    # Create the order
+    order = Order.objects.create(customer=customer)
+
+    # Create the order item with quantity = 1
+    OrderItem.objects.create(
+        order=order,
+        product=product,
+        quantity=1,
+        price_at_order=product.p_price
+    )
+
+    messages.success(request, f"Order #{order.id} placed for {product.p_name}!")
+    return redirect("order_confirmation",order_id=order.id)  # or 'order_confirmation', etc.
+
+def order_confirmation(request, order_id):
+    order = get_object_or_404(Order, pk=order_id, customer__cust_username=request.session['user'])
+    return render(request, 'order_confirmation.html', {'order': order})
+
+def orders_list(request):
+    orders = Order.objects.filter(customer__cust_username=request.session['user']).order_by('-created_at')
+    return render(request, 'orders_list.html', {'orders': orders})
+
+def edit_customer(request):
+    username = request.session.get('user')
+    if not username:
+        return redirect('login')  
+
+    customer = get_object_or_404(Customer, cust_username=username)
+
+    if request.method == "POST":
+        name = request.POST.get('name', '').strip()
+        phno = request.POST.get('phno', '').strip()
+        email = request.POST.get('email', '').strip()
+
+        if not name or not phno or not email:
+            error = "All fields are required."
+            return render(request, "edit_customer.html", {'customer': customer, 'error': error})
+
+        try:
+            phno = int(phno)
+        except ValueError:
+            error = "Phone number must be numeric."
+            return render(request, "edit_customer.html", {'customer': customer, 'error': error})
+
+        customer.cust_name = name
+        customer.cust_phone = phno
+        customer.cust_email = email
+        customer.save()
+        return redirect('customer_profile')  
+
+    else:
+        return render(request, "edit_customer.html", {'customer': customer})
+
+
+
+
+
+
 
 # Admin section
 def admin_login(request):
@@ -167,6 +244,11 @@ def add_product(request):
         'success': success,
         'error': error
     })
+
+@login_required(login_url='admin_login')
+def view_orders(request):
+    orders=Order.objects.all()
+    return render(request,'admin/view_orders.html', {'orders': orders})
 
 @require_POST
 def delete_product(request, pk):

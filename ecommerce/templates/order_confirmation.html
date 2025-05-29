@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+
+{% block title %} Order Confirmation - Shopy{% endblock %}
+
+{% block content %}
+    <div class="max-w-3xl my-5 mx-auto bg-white rounded shadow p-6">
+        <h1 class="text-3xl font-bold text-green-600 mb-4">Thank you for your order!</h1>
+        
+        <p class="mb-4">Your order was placed successfully on <strong>{{ order.created_at|date:"F j, Y, g:i a" }}</strong>.</p>
+
+        <h2 class="text-xl font-semibold mb-2">Order Summary:</h2>
+        <div class="border rounded p-4 mb-6">
+            <ul class="divide-y divide-gray-200">
+                {% for item in order.items.all %}
+                <li class="py-4 flex items-center justify-between space-x-4">
+                    <!-- Left: Product Info -->
+                    <div class="flex items-center space-x-4">
+                        {% if item.product.image %}
+                        <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" class="w-16 h-16 object-cover rounded">
+                        {% endif %}
+                        <div class="space-y-5">
+                            <p class="font-semibold text-gray-800">{{ item.product.p_name }}</p>
+                            <p class="text-sm text-gray-500">Unit Price: ₹{{ item.price_at_order }}</p>
+                            <p class="text-sm text-gray-500">Quantity: {{ item.quantity }}</p>
+                            <p class="text-sm text-gray-500">Subtotal: ₹{{ item.get_total_price }}</p>
+                        </div>
+                    </div>
+
+                    <!-- Optional: Link to product -->
+                    <a href="{% url 'product_detail' item.product.id %}" class="text-sm text-blue-600 hover:underline">
+                        View Product
+                    </a>
+                </li>
+                {% endfor %}
+            </ul>
+
+            <div class="mt-6 flex justify-between font-semibold text-lg">
+                <span>Total:</span>
+                <span>₹{{ order.get_total_price }}</span>
+            </div>
+        </div>
+
+
+        <p class="mb-6">Status: <span class="font-medium text-blue-600">{{ order.get_status_display }}</span></p>
+
+        <a href="" class="inline-block bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+            View Your Orders
+        </a>
+    </div>
+    
+{% endblock %}

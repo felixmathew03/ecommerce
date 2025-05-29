@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+
+{% block title %}Profile{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto mt-10 p-6 bg-white rounded-lg shadow-md">
+  
+  <!-- Profile Header -->
+  <div class="flex justify-between items-center border-b pb-4 mb-6">
+    <div>
+      <h2 class="text-2xl font-bold text-gray-800">Welcome, {{ customer.cust_name|title }}</h2>
+      <p class="text-gray-500">{{ customer.cust_email }}</p>
+    </div>
+    <div class="space-x-2">
+      <a href="{% url 'edit_customer' %}" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Edit Profile</a>
+      <a href="{% url 'logout' %}" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">Logout</a>
+    </div>
+  </div>
+
+  <!-- Quick Access Buttons -->
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+    <a href="" class="bg-gray-100 p-4 rounded-lg text-center hover:shadow">
+      🛒<br><span class="font-semibold">Cart</span>
+    </a>
+    <a href="" class="bg-gray-100 p-4 rounded-lg text-center hover:shadow">
+      ❤️<br><span class="font-semibold">Wishlist</span>
+    </a>
+    <a href="{% url 'orders_list' %}" class="bg-gray-100 p-4 rounded-lg text-center hover:shadow">
+      📦<br><span class="font-semibold">Orders</span>
+    </a>
+    <a href="" class="bg-gray-100 p-4 rounded-lg text-center hover:shadow">
+      ⚙️<br><span class="font-semibold">Settings</span>
+    </a>
+  </div>
+
+  <!-- Order History Section -->
+  <div>
+    <h3 class="text-xl font-semibold mb-4 text-gray-800">Your Recent Orders</h3>
+    
+    {% if orders %}
+      <ul class="space-y-4">
+        {% for order in orders %}
+        <li class="border rounded p-4 flex justify-between items-center">
+          <div>
+            <p class="font-semibold">Order #{{ order.id }}</p>
+            <p class="text-sm text-gray-500">Placed on {{ order.created_at|date:"F j, Y" }}</p>
+          </div>
+          <div>
+            <span class="text-sm font-medium text-green-600">{{ order.status }}</span>
+          </div>
+        </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="text-gray-500">You haven't placed any orders yet.</p>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
