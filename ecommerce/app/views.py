@@ -16,6 +16,8 @@ def getuser(request):
 
 # Homepage view
 def index(request):
+    if not getuser(request):
+        return redirect(customer_login)
     category_id = request.GET.get('category')
     if category_id:
         products = Product.objects.filter(category_id=category_id)
@@ -43,22 +45,44 @@ def signup(request):
         cnf_password=request.POST['cnf_password']
 
         psw=password.encode('utf-8')
-        salt=bcrypt.gensalt()               #Password Hashing
+        salt=bcrypt.gensalt()            
         psw_hashed=bcrypt.hashpw(psw,salt)
 
         if password==cnf_password:
             data=Customer.objects.create(cust_name=name,cust_phone=phno,cust_email=email,cust_username=username,cust_password=psw_hashed.decode('utf-8'))
             data.save()
-            messages.success(request, "Account created successfully pls login to continue !")  # recorded
+            messages.success(request, "Account created successfully pls login to continue !")  
         else:
-            messages.warning(request, "Password Doesn't match !")  # recorded
-        
-
-        return redirect(login)
+            messages.warning(request, "Password Doesn't match !") 
+        return redirect(signup)
     else:
         return render(request,"signup.html",{'user':getuser(request)})
 
+def customer_login(request):
+        if request.method=="POST":
+            username=request.POST['username']
+            password=request.POST['password']
+            psw=password.encode('utf-8')
+            try:
+                data=Customer.objects.get(cust_username=username)
+                if bcrypt.checkpw(psw,data.cust_password.encode('utf-8')):
+                    request.session['user']=username
+                    messages.success(request, "Login successfully completed!")
+                else:
+                    messages.warning(request, "Incorrect password!")
+            except:
+                messages.warning(request, "Incorrect Username!") 
+        
+            return redirect(customer_login)
+        else:
+            return render(request,"login.html",{'user':getuser(request)})
 
+def logout(request):
+    if getuser(request):
+        del request.session['user']
+        return redirect(customer_login)
+    else:
+        return redirect(customer_login)
 
 # Admin section
 def admin_login(request):
