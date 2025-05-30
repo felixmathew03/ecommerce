@@ -30,7 +30,7 @@ class Customer(models.Model):
 
 class OrderStatus(models.TextChoices):
     PROCESSING = 'Processing', _('Processing')
-    SHIPPED = 'Shipped', _('Shipped')
+    PACKED = 'Packed', _('Packed')
     DELIVERED = 'Delivered', _('Delivered')
     CANCELLED = 'Cancelled', _('Cancelled')
 
@@ -60,3 +60,29 @@ class OrderItem(models.Model):
 
     def __str__(self):
         return f"{self.quantity} × {self.product.p_name}"
+
+class Cart(models.Model):
+    customer = models.OneToOneField(Customer, on_delete=models.CASCADE, related_name='cart')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.customer.cust_username}'s Cart"
+
+    def get_total_price(self):
+        return sum(item.get_total_price() for item in self.items.all())
+
+    def get_total_items(self):
+        return sum(item.quantity for item in self.items.all())
+
+
+class CartItem(models.Model):
+    cart = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name='items')
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    quantity = models.PositiveIntegerField(default=1)
+
+    def __str__(self):
+        return f"{self.quantity} × {self.product.p_name}"
+
+    def get_total_price(self):
+        return self.quantity * self.product.p_price

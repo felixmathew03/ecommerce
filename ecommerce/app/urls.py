@@ -3,6 +3,7 @@ from . import views
 
 urlpatterns = [
     path('', views.index, name='index'),
+    
     path('adminn/login/', views.admin_login, name='admin_login'),
     path('adminn/dashboard', views.admin_dashboard, name='admin_dashboard'),
     path('adminn/logout/', views.admin_logout, name='admin_logout'),
@@ -10,6 +11,8 @@ urlpatterns = [
     path('adminn/add-product/', views.add_product, name='add_product'),
     path('adminn/add-product/', views.add_product, name='add_product'),
     path('adminn/orders/', views.view_orders, name='view_orders'),
+    path('adminn/orders/update/<int:order_id>/', views.update_order_status, name='update_order_status'),
+    
     path('product/delete/<int:pk>/', views.delete_product, name='delete_product'),
     path('product/<int:pk>/', views.product_detail, name='product_detail'),
     path('signup/', views.signup,name='signup'),
@@ -20,4 +23,8 @@ urlpatterns = [
     path('order-confirmation/<int:order_id>/', views.order_confirmation, name='order_confirmation'),
     path('orders-lists/', views.orders_list, name='orders_list'),
     path('edit-customer/', views.edit_customer, name='edit_customer'),
+    path('add-to-cart/<int:product_id>/', views.add_to_cart, name='add_to_cart'),
+    path('cart-lists/', views.cart_list, name='cart_list'),
+    path('cart/update/<int:item_id>/', views.update_cart_quantity, name='update_cart_quantity'),
+    path('cart/delete/<int:item_id>/', views.delete_cart_item, name='delete_cart_item'),
 ]

@@ -36,10 +36,20 @@
             <span class="text-red-500 font-semibold">Out of Stock</span>
           {% endif %}
         </p>
-
-        <a href="{% url 'buy_now' product.id %}" class="mt-4 bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 disabled:opacity-50" {% if product.p_stock == 0 %}disabled{% endif %}>
-          Buy Now
-        </a>
+        <div class="flex flex-col gap-2 w-max">
+          <a href="{% url 'buy_now' product.id %}" class=" bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 disabled:opacity-50" {% if product.p_stock == 0 %}disabled{% endif %}>
+            Buy Now
+          </a>
+          {% if is_cart%}
+            <a href="{% url 'cart_list' %}" class=" bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700 disabled:opacity-50" {% if product.p_stock == 0 %}disabled{% endif %}>
+              Go to cart
+            </a>
+          {% else %}
+            <a href="{% url 'add_to_cart' product.id %}" class=" bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700 disabled:opacity-50" {% if product.p_stock == 0 %}disabled{% endif %}>
+              Add to cart
+            </a>
+          {% endif %}
+        </div>
       </div>
     </div>
   </div>

@@ -15,18 +15,16 @@
                 <li class="py-4 flex items-center justify-between space-x-4">
                     <!-- Left: Product Info -->
                     <div class="flex items-center space-x-4">
-                        {% if item.product.image %}
-                        <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" class="w-16 h-16 object-cover rounded">
+                        {% if item.product.p_image %}
+                        <img src="{{ item.product.p_image.url }}" alt="{{ item.product.p_name }}" class="w-16 h-16 object-cover rounded">
                         {% endif %}
-                        <div class="space-y-5">
+                        <div class="">
                             <p class="font-semibold text-gray-800">{{ item.product.p_name }}</p>
                             <p class="text-sm text-gray-500">Unit Price: ₹{{ item.price_at_order }}</p>
                             <p class="text-sm text-gray-500">Quantity: {{ item.quantity }}</p>
                             <p class="text-sm text-gray-500">Subtotal: ₹{{ item.get_total_price }}</p>
                         </div>
                     </div>
-
-                    <!-- Optional: Link to product -->
                     <a href="{% url 'product_detail' item.product.id %}" class="text-sm text-blue-600 hover:underline">
                         View Product
                     </a>
@@ -43,7 +41,7 @@
 
         <p class="mb-6">Status: <span class="font-medium text-blue-600">{{ order.get_status_display }}</span></p>
 
-        <a href="" class="inline-block bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+        <a href="{% url 'orders_list' %}" class="inline-block bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
             View Your Orders
         </a>
     </div>

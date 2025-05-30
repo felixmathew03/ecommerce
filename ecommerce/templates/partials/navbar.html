@@ -1,22 +1,22 @@
+{% load static %}
 <nav class="bg-white border-b border-gray-200">
   <div class="container mx-auto px-4 py-4 flex justify-between items-center">
     <a href="/" class="text-xl font-bold text-blue-600">Shopy</a>
     <div class="space-x-4 flex items-center relative" x-data="{ open: false }">
-      
+      <a href="/" class="text-gray-700 hover:text-blue-500">Home</a>
+      <a href="{% url 'orders_list' %}" class="text-gray-700 hover:text-blue-500">Orders</a>
+      <a href="{% url 'cart_list' %}" class="text-gray-700 hover:text-blue-500">Cart</a>
+      <a href="" class="text-gray-700 hover:text-blue-500">Favourites</a>
+
       <button @click="open = !open" class="text-indigo-900 font-semibold hover:text-blue-500 focus:outline-none">
-        Account
+        <img class="size-6" src="{% static 'images/male-user.png' %}" alt="">
       </button>
 
       <!-- Dropdown -->
-      <div x-show="open" @click.outside="open = false" class="absolute top-8 left-1 bg-white border rounded shadow-md w-24 py-2 z-50">
+      <div x-show="open" @click.outside="open = false" class="absolute top-8 right-1 bg-white border rounded shadow-md w-24 py-2 z-50">
         <a href="{% url 'customer_profile' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Profile</a>
         <a href="{% url 'logout' %}" class="block px-4 py-2 text-sm text-red-600 hover:bg-gray-100">Logout</a>
       </div>
-      <a href="/" class="text-gray-700 hover:text-blue-500">Home</a>
-      
-
-      <a href="{% url 'orders_list' %}" class="text-gray-700 hover:text-blue-500">Orders</a>
-      <a href="/about/" class="text-gray-700 hover:text-blue-500">About</a>
     </div>
   </div>
 </nav>

@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
-from .models import Category, Product, Customer, OrderItem, Order
+from .models import Category, Product, Customer, OrderItem, Order,OrderStatus, Cart, CartItem
 from django.views.decorators.http import require_POST
 import bcrypt
 from django.contrib import messages
@@ -31,7 +31,18 @@ def index(request):
 
 def product_detail(request, pk):
     product = get_object_or_404(Product, pk=pk)
-    return render(request, 'product_detail.html', {'product': product})
+    customer = get_object_or_404(Customer, cust_username=request.session['user'])
+    
+    is_cart = False
+
+    try:
+        cart = Cart.objects.get(customer=customer)
+        if CartItem.objects.filter(cart=cart, product=product).exists():
+            is_cart = True
+    except Cart.DoesNotExist:
+        pass  
+
+    return render(request, 'product_detail.html', {'product': product, 'is_cart': is_cart})
 
 #user section
 
@@ -73,7 +84,7 @@ def customer_login(request):
             except:
                 messages.warning(request, "Incorrect Username!") 
         
-            return redirect(customer_login)
+            return redirect('index')
         else:
             return render(request,"login.html",{'user':getuser(request)})
 
@@ -94,18 +105,11 @@ def buy_now(request, product_id):
         messages.error(request, "You must be logged in to buy a product.")
         return redirect('login')
 
-    # Get the logged-in customer
     customer = get_object_or_404(Customer, cust_username=request.session['user'])
-
-    # Get the product
     product = get_object_or_404(Product, pk=product_id)
-
-    # Optional: check for available stock here if needed
-
-    # Create the order
+    CartItem.objects.filter(product=product).delete()
     order = Order.objects.create(customer=customer)
 
-    # Create the order item with quantity = 1
     OrderItem.objects.create(
         order=order,
         product=product,
@@ -113,8 +117,7 @@ def buy_now(request, product_id):
         price_at_order=product.p_price
     )
 
-    messages.success(request, f"Order #{order.id} placed for {product.p_name}!")
-    return redirect("order_confirmation",order_id=order.id)  # or 'order_confirmation', etc.
+    return redirect("order_confirmation",order_id=order.id)  
 
 def order_confirmation(request, order_id):
     order = get_object_or_404(Order, pk=order_id, customer__cust_username=request.session['user'])
@@ -155,7 +158,59 @@ def edit_customer(request):
     else:
         return render(request, "edit_customer.html", {'customer': customer})
 
+def add_to_cart(request,product_id):
+    print("cart")
+    if not getuser(request):
+        messages.error(request, "You must be logged in to buy a product.")
+        return redirect('login') 
+    customer = get_object_or_404(Customer, cust_username=request.session['user'])
+    product = get_object_or_404(Product, pk=product_id)
+    try:
+        cart = Cart.objects.get(customer=customer)
+    except Cart.DoesNotExist:
+        cart = None
+    if cart == None:
+        cart = Cart.objects.create(customer=customer)
 
+    CartItem.objects.create(
+        cart=cart,
+        product=product,
+        quantity=1
+    )
+    
+    return redirect("cart_list")
+
+def cart_list(request):
+    cart = Cart.objects.get(customer__cust_username=request.session['user'])
+    cart_items = CartItem.objects.filter(cart=cart)
+    context={
+        'cart':cart,
+        'cart_items':cart_items
+    }
+    return render(request, 'cart_list.html', context)
+
+def update_cart_quantity(request, item_id):
+    item = get_object_or_404(CartItem, id=item_id)
+
+    if request.method == "POST":
+        action = request.POST.get("action")
+        if action == "increase":
+            item.quantity += 1
+        elif action == "decrease":
+            if item.quantity > 1:
+                item.quantity -= 1
+            else:
+                item.delete()
+                return redirect('cart_list')  
+
+        item.save()
+    
+    return redirect('cart_list')
+
+def delete_cart_item(request, item_id):
+    item = get_object_or_404(CartItem, id=item_id)
+    item.delete()
+    return redirect('cart_list')
 
 
 
@@ -249,6 +304,25 @@ def add_product(request):
 def view_orders(request):
     orders=Order.objects.all()
     return render(request,'admin/view_orders.html', {'orders': orders})
+
+@login_required(login_url='admin_login')
+def update_order_status(request, order_id):
+    order = get_object_or_404(Order, id=order_id)
+    order_items = order.items.select_related('product').all()
+
+    if request.method == 'POST':
+        new_status = request.POST.get('status')
+        if new_status in OrderStatus.values:
+            order.status = new_status
+            order.save()
+            return redirect('view_orders')  
+
+    return render(request, 'admin/update_order_status.html', {
+        'order': order,
+        'order_items': order_items,
+        'status_choices': OrderStatus.choices,
+    })
+
 
 @require_POST
 def delete_product(request, pk):
