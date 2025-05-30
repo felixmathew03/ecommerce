@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
-from .models import Category, Product, Customer, OrderItem, Order,OrderStatus, Cart, CartItem
+from .models import Category, Product, Customer, OrderItem, Order,OrderStatus, Cart, CartItem, Favourite, FavouriteItem
 from django.views.decorators.http import require_POST
 import bcrypt
 from django.contrib import messages
@@ -34,15 +34,23 @@ def product_detail(request, pk):
     customer = get_object_or_404(Customer, cust_username=request.session['user'])
     
     is_cart = False
-
+    is_favourite = False
+    
     try:
         cart = Cart.objects.get(customer=customer)
         if CartItem.objects.filter(cart=cart, product=product).exists():
             is_cart = True
     except Cart.DoesNotExist:
-        pass  
+        pass
+    
+    try:
+        favourite = Favourite.objects.get(customer=customer)
+        if FavouriteItem.objects.filter(favourite=favourite, product=product).exists():
+            is_favourite = True
+    except Favourite.DoesNotExist:
+        pass   
 
-    return render(request, 'product_detail.html', {'product': product, 'is_cart': is_cart})
+    return render(request, 'product_detail.html', {'product': product, 'is_cart': is_cart, 'is_favourite':is_favourite})
 
 #user section
 
@@ -181,8 +189,13 @@ def add_to_cart(request,product_id):
     return redirect("cart_list")
 
 def cart_list(request):
-    cart = Cart.objects.get(customer__cust_username=request.session['user'])
-    cart_items = CartItem.objects.filter(cart=cart)
+    cart_items=None
+    try:
+        cart = Cart.objects.get(customer__cust_username=request.session['user'])
+        if cart:
+            cart_items = CartItem.objects.filter(cart=cart)
+    except Cart.DoesNotExist:
+        cart=None
     context={
         'cart':cart,
         'cart_items':cart_items
@@ -212,6 +225,88 @@ def delete_cart_item(request, item_id):
     item.delete()
     return redirect('cart_list')
 
+def cancel_order(request, order_id):
+    order = get_object_or_404(Order, id=order_id)
+    new_status = 'Cancelled'
+    if new_status in OrderStatus.values:
+        order.status = new_status
+        order.save()
+        return redirect('orders_list')  
+    return render('orders_list')
+
+def buy_all(request):
+    if not getuser(request):  
+        messages.error(request, "You must be logged in to buy a product.")
+        return redirect('login')
+
+    customer = get_object_or_404(Customer, cust_username=request.session['user'])
+
+    try:
+        cart = Cart.objects.get(customer=customer)
+    except Cart.DoesNotExist:
+        messages.error(request, "Your cart is empty.")
+        return redirect("cart")
+
+    cart_items = CartItem.objects.filter(cart=cart)
+
+    if not cart_items.exists():
+        messages.warning(request, "No items in your cart to purchase.")
+        return redirect("cart")
+
+    order = Order.objects.create(customer=customer)
+    for c in cart_items:
+        OrderItem.objects.create(
+            order=order,
+            product=c.product,
+            quantity=c.quantity,  
+            price_at_order=c.product.p_price
+        )
+    cart_items.delete()
+
+    return redirect("order_confirmation", order_id=order.id)
+
+def buy_now_from_cart(request, cart_item_id):
+    if not getuser(request):
+        messages.error(request, "You must be logged in to buy a product.")
+        return redirect('login')
+
+    customer = get_object_or_404(Customer, cust_username=request.session['user'])
+
+    cart_item = get_object_or_404(CartItem, pk=cart_item_id, cart__customer=customer)
+
+    order = Order.objects.create(customer=customer)
+    print(cart_item.quantity)
+    OrderItem.objects.create(
+        order=order,
+        product=cart_item.product,
+        quantity=cart_item.quantity,
+        price_at_order=cart_item.product.p_price
+    )
+
+    cart_item.delete()
+
+    return redirect("order_confirmation", order_id=order.id)
+
+def add_to_favourite(request,product_id):
+    print("favourites")
+    if not getuser(request):
+        messages.error(request, "You must be logged in to buy a product.")
+        return redirect('login') 
+    customer = get_object_or_404(Customer, cust_username=request.session['user'])
+    product = get_object_or_404(Product, pk=product_id)
+    try:
+        favourite = Favourite.objects.get(customer=customer)
+    except Favourite.DoesNotExist:
+        favourite = None
+    if favourite == None:
+        favourite = Favourite.objects.create(customer=customer)
+
+    FavouriteItem.objects.create(
+        favourite=favourite,
+        product=product
+    )
+    
+    return redirect("product_detail.html")
 
 
 
@@ -302,8 +397,18 @@ def add_product(request):
 
 @login_required(login_url='admin_login')
 def view_orders(request):
-    orders=Order.objects.all()
-    return render(request,'admin/view_orders.html', {'orders': orders})
+    status_filter = request.GET.get('status')
+
+    if status_filter in OrderStatus.values:
+        orders = Order.objects.filter(status=status_filter)
+    else:
+        orders = Order.objects.all()
+
+    return render(request, 'admin/view_orders.html', {
+        'orders': orders,
+        'status_choices': OrderStatus.choices,
+        'selected_status': status_filter,
+    })
 
 @login_required(login_url='admin_login')
 def update_order_status(request, order_id):
@@ -312,17 +417,36 @@ def update_order_status(request, order_id):
 
     if request.method == 'POST':
         new_status = request.POST.get('status')
+
         if new_status in OrderStatus.values:
+            # Check stock availability if changing to Packed
+            if new_status == OrderStatus.PACKED:
+                for oi in order_items:
+                    if oi.product.p_stock < oi.quantity:
+                        messages.error(
+                            request, 
+                            f"Not enough stock for {oi.product.p_name}. Available: {oi.product.p_stock}, Required: {oi.quantity}"
+                        )
+                        return redirect('update_order_status', order_id=order.id)
+
             order.status = new_status
             order.save()
-            return redirect('view_orders')  
+
+            # Deduct stock after confirming availability
+            if order.status == OrderStatus.PACKED:
+                for oi in order_items:
+                    product = oi.product
+                    product.p_stock -= oi.quantity
+                    product.save()
+
+            messages.success(request, f"Order #{order.id} status updated to {order.status}")
+            return redirect('view_orders')
 
     return render(request, 'admin/update_order_status.html', {
         'order': order,
         'order_items': order_items,
         'status_choices': OrderStatus.choices,
     })
-
 
 @require_POST
 def delete_product(request, pk):
@@ -333,4 +457,4 @@ def delete_product(request, pk):
 @login_required(login_url='admin_login')
 def admin_logout(request):
     logout(request)
-    return redirect('admin_login')
+    return redirect('login')

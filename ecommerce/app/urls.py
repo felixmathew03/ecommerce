@@ -9,7 +9,6 @@ urlpatterns = [
     path('adminn/logout/', views.admin_logout, name='admin_logout'),
     path('adminn/addcategory/', views.add_category, name='add_category'),
     path('adminn/add-product/', views.add_product, name='add_product'),
-    path('adminn/add-product/', views.add_product, name='add_product'),
     path('adminn/orders/', views.view_orders, name='view_orders'),
     path('adminn/orders/update/<int:order_id>/', views.update_order_status, name='update_order_status'),
     
@@ -27,4 +26,8 @@ urlpatterns = [
     path('cart-lists/', views.cart_list, name='cart_list'),
     path('cart/update/<int:item_id>/', views.update_cart_quantity, name='update_cart_quantity'),
     path('cart/delete/<int:item_id>/', views.delete_cart_item, name='delete_cart_item'),
+    path('order/update/<int:order_id>/', views.cancel_order, name='cancel_order'),
+    path('cart-lists/buyall/', views.buy_all, name='buy_all'),
+    path('cart-lists/buynow/<int:cart_item_id>/', views.buy_now_from_cart, name='buy_now_from_cart'),
+    path('add-to-favourite/<int:product_id>/', views.add_to_favourite, name='add_to_favourite'),
 ]

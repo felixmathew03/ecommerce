@@ -35,7 +35,7 @@
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-900">₹{{ item.get_total_price }}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <a href="{% url 'delete_cart_item' item.id %}" class="text-red-600 hover:text-red-900 mr-2">Remove</a>
-                        <a href="{% url 'buy_now' item.product.id %}" class="text-green-600 hover:text-green-900">Buy Now</a>
+                        <a href="{% url 'buy_now_from_cart' item.id %}" class="text-green-600 hover:text-green-900">Buy Now</a>
                     </td>
                 </tr>
                 {% endfor %}
@@ -44,7 +44,7 @@
                 <tr>
                     <td colspan="3" class="px-6 py-4 text-right font-semibold text-sm text-gray-700">Total:</td>
                     <td class="px-6 py-4 text-right font-bold text-sm text-gray-900">₹{{ cart.get_total_price }}</td>
-                    <td></td>
+                    <td><a href="{% url 'buy_all' %}" class="px-4 py-2 text-center font-semibold text-blue-600 hover:text-blue-800 cursor-pointer">Buy all</a></td>
                 </tr>
             </tfoot>
         </table>

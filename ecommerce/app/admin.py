@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Category, Product, Customer, Order, OrderItem, Cart, CartItem
+from .models import Category, Product, Customer, Order, OrderItem, Cart, CartItem, Favourite, FavouriteItem
 # Register your models here.
 
 admin.site.register(Category)
@@ -9,3 +9,5 @@ admin.site.register(Order)
 admin.site.register(OrderItem)
 admin.site.register(Cart)
 admin.site.register(CartItem)
+admin.site.register(Favourite)
+admin.site.register(FavouriteItem)

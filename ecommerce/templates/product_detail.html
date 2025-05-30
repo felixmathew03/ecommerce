@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-
+{% load static %}
 {% block title %}{{ product.p_name }}{% endblock %}
 
 {% block content %}
@@ -10,7 +10,7 @@
       <!-- Product Image -->
       <div class="md:w-1/2">
         {% if product.p_image %}
-          <img src="{{ product.p_image.url }}" alt="{{ product.p_name }}" class="w-full h-96 object-cover">
+          <img src="{{ product.p_image.url }}" alt="{{ product.p_name }}" class="w-full h-96 object-contain">
         {% else %}
           <div class="w-full h-96 bg-gray-200 flex items-center justify-center text-gray-500">
             No Image Available
@@ -50,6 +50,16 @@
             </a>
           {% endif %}
         </div>
+        {% if is_favourite%}
+            <a href="">
+              <img src="{% static 'images/star-filled.png' %}" class="size-9 mt-2 cursor-pointer" alt="">
+            </a>
+          {% else %}
+            <a href="{% url 'add_to_favourite' product.id %}">
+              <img src="{% static 'images/star.png' %}" class="size-9 mt-2 cursor-pointer" alt="">
+            </a>
+          {% endif %}
+        
       </div>
     </div>
   </div>

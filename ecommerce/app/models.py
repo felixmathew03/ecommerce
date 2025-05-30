@@ -86,3 +86,22 @@ class CartItem(models.Model):
 
     def get_total_price(self):
         return self.quantity * self.product.p_price
+
+class Favourite(models.Model):
+    customer = models.OneToOneField(Customer, on_delete=models.CASCADE, related_name='favourites')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.customer.cust_username}'s Favourites"
+
+    def get_total_items(self):
+        return self.items.count()  
+
+
+class FavouriteItem(models.Model):
+    favourite = models.ForeignKey(Favourite, on_delete=models.CASCADE, related_name='items')
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f"{self.product.p_name}"
