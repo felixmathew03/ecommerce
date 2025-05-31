@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Favourites{% endblock %}
+
+{% block content %}
+    <div class="w-4/5 mx-auto rounded my-4  p-6">
+        <h1 class="text-3xl font-bold mb-6">Favourites</h1>
+
+        {% if favourites %}
+            <div class="w-full flex flex-wrap gap-3  justify-left items-center ">
+                {% for favourite in favourites %}
+                    <div class="shadow-xl p-3 hover:shadow-2xl">
+                        <div class="size-48 flex items-center justify-center ">
+                            <img src="{{favourite.product.p_image.url}}" class="size-full object-contain " alt="">
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <a href="../product/{{favourite.product.pk}}"><h3>{{favourite.product.p_name}}</h3></a>
+                            <a href="../remove-from-favourite/{{favourite.product.id}}/"><img src="{% static 'images/star-filled.png' %}" class="size-8" alt=""></a>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="text-gray-600">You have no favourites yet.</p>
+        {% endif %}
+    </div>
+
+{% endblock %}

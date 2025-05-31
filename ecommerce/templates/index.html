@@ -7,28 +7,49 @@
 
   <div class="flex flex-wrap -mx-4 py-2 h-[80vh]">
     <!-- Categories Sidebar -->
-    <div class="w-full md:w-1/4 px-4   md:mb-0">
-      <h2 class="text-3xl font-bold mb-4 text-slate-700">Categories</h2>
-      <ul class="bg-white shadow rounded p-4 space-y-2">
-        <li>
-          <a href="{% url 'index' %}" class="text-blue-600 hover:underline">
-            All
-          </a>
-        </li>
-        {% for category in categories %}
-        <li>
-          <a href="{% url 'index' %}?category={{ category.id }}" class="text-blue-600 hover:underline">
-            {{ category.c_name }}
-          </a>
-        </li>
-        {% empty %}
-        <li>No categories found.</li>
-        {% endfor %}
-      </ul>
+    <div class="w-full md:w-1/5 px-4   md:mb-0 flex flex-col justify-start gap-5">
+      <form method="get" action="{% url 'index' %}" class="relative border shadow-lg rounded-xl border-gray-300 bg-white">
+        <input  
+          placeholder="Search..."
+          class="input rounded-xl w-5/6 px-5 py-3 w-56 transition-all outline-none"
+          name="search"
+          type="search"
+          value="{{ request.GET.search|default:'' }}"
+        />
+        <button type="submit" class="absolute top-3 right-3 text-gray-500">
+          <svg class="size-6" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path
+              d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"
+              stroke-linejoin="round"
+              stroke-linecap="round"
+            ></path>
+          </svg>
+        </button>
+      </form>
+
+      <div class="">
+        <h2 class="text-3xl font-bold mb-4 text-slate-700">Categories</h2>
+        <ul class="bg-white shadow rounded p-4 space-y-2">
+          <li>
+            <a href="{% url 'index' %}" class="text-blue-600 hover:underline">
+              All
+            </a>
+          </li>
+          {% for category in categories %}
+          <li>
+            <a href="{% url 'index' %}?category={{ category.id }}" class="text-blue-600 hover:underline">
+              {{ category.c_name }}
+            </a>
+          </li>
+          {% empty %}
+          <li>No categories found.</li>
+          {% endfor %}
+        </ul>
+      </div>
     </div>
 
     <!-- Products Grid -->
-    <div class="w-full h-full overflow-y-scroll  md:w-3/4 px-4">
+    <div class="w-full h-full overflow-y-scroll  md:w-4/5 px-4">
       <h2 class="text-3xl font-bold mb-4 text-slate-700 ">Products</h2>
       <div class="h-6/7 grid grid-cols-1  sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {% for product in products %}

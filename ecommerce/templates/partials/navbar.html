@@ -6,7 +6,7 @@
       <a href="/" class="text-gray-700 hover:text-blue-500">Home</a>
       <a href="{% url 'orders_list' %}" class="text-gray-700 hover:text-blue-500">Orders</a>
       <a href="{% url 'cart_list' %}" class="text-gray-700 hover:text-blue-500">Cart</a>
-      <a href="" class="text-gray-700 hover:text-blue-500">Favourites</a>
+      <a href="{% url 'favourites' %}" class="text-gray-700 hover:text-blue-500">Favourites</a>
 
       <button @click="open = !open" class="text-indigo-900 font-semibold hover:text-blue-500 focus:outline-none">
         <img class="size-6" src="{% static 'images/male-user.png' %}" alt="">

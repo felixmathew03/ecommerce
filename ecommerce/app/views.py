@@ -18,15 +18,23 @@ def getuser(request):
 def index(request):
     if not getuser(request):
         return redirect(customer_login)
+
     category_id = request.GET.get('category')
+    search_query = request.GET.get('search')
+
+    products = Product.objects.all()
+
     if category_id:
-        products = Product.objects.filter(category_id=category_id)
-    else:
-        products = Product.objects.all()
-    categories=Category.objects.all()
-    return render(request, 'index.html',{
-        'products':products,
-        'categories':categories
+        products = products.filter(category_id=category_id)
+
+    if search_query:
+        products = products.filter(p_name__icontains=search_query)
+
+    categories = Category.objects.all()
+    
+    return render(request, 'index.html', {
+        'products': products,
+        'categories': categories
     })
 
 def product_detail(request, pk):
@@ -49,7 +57,6 @@ def product_detail(request, pk):
             is_favourite = True
     except Favourite.DoesNotExist:
         pass   
-
     return render(request, 'product_detail.html', {'product': product, 'is_cart': is_cart, 'is_favourite':is_favourite})
 
 #user section
@@ -98,6 +105,9 @@ def customer_login(request):
 
 def customer_logout(request):
     if getuser(request):
+        messages.success(request,"")
+        messages.warning(request,"")
+        messages.error(request,"")
         del request.session['user']
         return redirect(customer_login)
     else:
@@ -106,7 +116,20 @@ def customer_logout(request):
 def customer_profile(request):
     customer = get_object_or_404(Customer, cust_username=request.session['user'])
     orders = Order.objects.filter(customer__cust_username=request.session['user']).order_by('-created_at')
-    return render(request, 'customer_profile.html', {'customer': customer,'orders':orders})
+    favourite=Favourite.objects.get(customer=customer)
+    favourite_count=favourite.get_total_items()
+    cart=Cart.objects.get(customer=customer)
+    cart_count=cart.get_total_items()
+    order_count=0
+    for order in orders:
+        order_count+=order.get_total_items()
+    return render(request, 'customer_profile.html', {
+        'customer': customer,
+        'orders':orders,
+        'order_count':order_count,
+        'favourite_count':favourite_count,
+        'cart_count':cart_count
+    })
 
 def buy_now(request, product_id):
     if not getuser(request):
@@ -267,7 +290,7 @@ def buy_all(request):
 
 def buy_now_from_cart(request, cart_item_id):
     if not getuser(request):
-        messages.error(request, "You must be logged in to buy a product.")
+        messages.error(request, "You must be logged in to add to cart.")
         return redirect('login')
 
     customer = get_object_or_404(Customer, cust_username=request.session['user'])
@@ -290,7 +313,7 @@ def buy_now_from_cart(request, cart_item_id):
 def add_to_favourite(request,product_id):
     print("favourites")
     if not getuser(request):
-        messages.error(request, "You must be logged in to buy a product.")
+        messages.error(request, "You must be logged in to add to favourites.")
         return redirect('login') 
     customer = get_object_or_404(Customer, cust_username=request.session['user'])
     product = get_object_or_404(Product, pk=product_id)
@@ -306,7 +329,46 @@ def add_to_favourite(request,product_id):
         product=product
     )
     
-    return redirect("product_detail.html")
+    return redirect('product_detail',pk=product_id)
+
+def remove_from_favourite(request, product_id):
+    print("remove from favourites")
+    if 'user' not in request.session:
+        messages.error(request, "You must be logged in to continue.")
+        return redirect('login')
+    customer = get_object_or_404(Customer, cust_username=request.session['user'])
+    product = get_object_or_404(Product, pk=product_id)
+
+    try:
+        favourite = Favourite.objects.get(customer=customer)
+    except Favourite.DoesNotExist:
+        favourite = None
+
+    if favourite is not None:
+        try:
+            favourite_item = FavouriteItem.objects.get(favourite=favourite,product=product)
+            favourite_item.delete()
+            messages.success(request, "Item removed from favourites.")
+        except FavouriteItem.DoesNotExist:
+            messages.warning(request, "Favourite item not found.")
+    
+    return redirect('product_detail', pk=product_id)
+
+
+def favourites(request):
+    if 'user' not in request.session:
+        messages.error(request, "You must be logged in to view favourites.")
+        return redirect('login')
+    customer = get_object_or_404(Customer, cust_username=request.session['user'])
+    try:
+        favourite = Favourite.objects.get(customer=customer)
+        favourites = FavouriteItem.objects.filter(favourite=favourite)
+    except Favourite.DoesNotExist:
+        favourites = []  
+
+    return render(request, 'favourites.html', {'favourites': favourites})
+
+
 
 
 
@@ -456,5 +518,8 @@ def delete_product(request, pk):
 
 @login_required(login_url='admin_login')
 def admin_logout(request):
+    messages.success(request,"")
+    messages.warning(request,"")
+    messages.error(request,"")
     logout(request)
     return redirect('login')

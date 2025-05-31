@@ -30,4 +30,6 @@ urlpatterns = [
     path('cart-lists/buyall/', views.buy_all, name='buy_all'),
     path('cart-lists/buynow/<int:cart_item_id>/', views.buy_now_from_cart, name='buy_now_from_cart'),
     path('add-to-favourite/<int:product_id>/', views.add_to_favourite, name='add_to_favourite'),
+    path('remove-from-favourite/<int:product_id>/', views.remove_from_favourite, name='remove_from_favourite'),
+    path('favourites/', views.favourites, name='favourites'),
 ]

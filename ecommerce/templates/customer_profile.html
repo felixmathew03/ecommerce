@@ -18,18 +18,15 @@
   </div>
 
   
-  <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+  <div class="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-3 gap-4 mb-8">
     <a href="{% url 'cart_list' %}" class="bg-gray-100 p-4 rounded-lg text-center hover:shadow flex flex-col items-center gap-5 justify-center">
-      <img class="size-8" src="{% static 'images/cart.png' %}" alt=""><span class="font-semibold">Cart</span>
+      <img class="size-8" src="{% static 'images/cart.png' %}" alt=""><span class="font-semibold">Cart ({{cart_count}})</span>
     </a>
-    <a href="" class="bg-gray-100 p-4 rounded-lg text-center hover:shadow flex flex-col items-center gap-5 justify-center">
-      <img class="size-6" src="{% static 'images/star.png' %}" alt=""><span class="font-semibold">Wishlist</span>
+    <a href="{% url 'favourites' %}" class="bg-gray-100 p-4 rounded-lg text-center hover:shadow flex flex-col items-center gap-5 justify-center">
+      <img class="size-6" src="{% static 'images/star.png' %}" alt=""><span class="font-semibold">Favourites ({{favourite_count}})</span>
     </a>
     <a href="{% url 'orders_list' %}" class="bg-gray-100 p-4 rounded-lg text-center hover:shadow flex flex-col items-center gap-5 justify-center">
-      <img class="size-6" src="{% static 'images/orders.png' %}" alt=""><span class="font-semibold">Orders</span>
-    </a>
-    <a href="" class="bg-gray-100 p-4 rounded-lg text-center hover:shadow">
-      ⚙️<span class="font-semibold">Settings</span>
+      <img class="size-6" src="{% static 'images/orders.png' %}" alt=""><span class="font-semibold">Orders ({{order_count}})</span>
     </a>
   </div>
 
