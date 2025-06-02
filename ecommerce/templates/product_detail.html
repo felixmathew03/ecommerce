@@ -37,9 +37,11 @@
           {% endif %}
         </p>
         <div class="flex flex-col gap-2 w-max">
-          <a href="{% url 'buy_now' product.id %}" class=" bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 disabled:opacity-50" {% if product.p_stock == 0 %}disabled{% endif %}>
+          <button onclick="choosePaymentMethod({{ product.id }})" class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 disabled:opacity-50"
+            {% if product.p_stock == 0 %}disabled{% endif %}
+          >
             Buy Now
-          </a>
+          </button>
           {% if is_cart%}
             <a href="{% url 'cart_list' %}" class=" bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700 disabled:opacity-50" {% if product.p_stock == 0 %}disabled{% endif %}>
               Go to cart
@@ -63,5 +65,38 @@
       </div>
     </div>
   </div>
+  <div id="paymentModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 hidden z-50">
+  <div class="bg-white p-6 rounded-lg shadow-lg max-w-sm w-full text-center">
+    <h2 class="text-lg font-semibold mb-4">Choose Payment Method</h2>
+    <div class="space-y-2">
+      <button onclick="redirectToPayment('cod')" class="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700">Cash on Delivery</button>
+      <button onclick="" class="w-full bg-blue-600 text-white py-2 rounded  disabled cursor-not-allowed">Online Payment</button>
+      <button onclick="closeModal()" class="text-gray-500 hover:text-red-600 text-sm mt-2">Cancel</button>
+    </div>
+  </div>
 </div>
+
+</div>
+<script>
+  let selectedProductId = null;
+
+  function choosePaymentMethod(productId) {
+    selectedProductId = productId;
+    document.getElementById('paymentModal').classList.remove('hidden');
+  }
+
+  function redirectToPayment(method) {
+    console.log("dsd")
+    if (selectedProductId) {
+      console.log(window.location.href)
+      window.location.href = `/buy-now/${selectedProductId}/?payment=${method}`;
+    }
+  }
+
+  function closeModal() {
+    document.getElementById('paymentModal').classList.add('hidden');
+    selectedProductId = null;
+  }
+</script>
+
 {% endblock %}

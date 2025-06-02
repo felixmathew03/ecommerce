@@ -3,7 +3,7 @@
 {% block title %}Your Cart Items - Shopy{% endblock %}
 
 {% block content %}
-<div class="max-w-4xl my-7 mx-auto bg-white rounded shadow p-6">
+<div class="max-w-4xl my-7 mx-auto bg-white rounded shadow p-6 box-content">
     <h1 class="text-3xl font-bold mb-6">Your Cart Items</h1>
 
     {% if cart_items %}
@@ -33,9 +33,12 @@
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right">₹{{ item.product.p_price }}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-900">₹{{ item.get_total_price }}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium ">
                         <a href="{% url 'delete_cart_item' item.id %}" class="text-red-600 hover:text-red-900 mr-2">Remove</a>
-                        <a href="{% url 'buy_now_from_cart' item.id %}" class="text-green-600 hover:text-green-900">Buy Now</a>
+                        <br>
+                        <button onclick="choosePaymentMethod({{ item.id }})" class="text-green-600 hover:text-green-900">
+                            Buy Now
+                        </button>
                     </td>
                 </tr>
                 {% endfor %}
@@ -44,12 +47,64 @@
                 <tr>
                     <td colspan="3" class="px-6 py-4 text-right font-semibold text-sm text-gray-700">Total:</td>
                     <td class="px-6 py-4 text-right font-bold text-sm text-gray-900">₹{{ cart.get_total_price }}</td>
-                    <td><a href="{% url 'buy_all' %}" class="px-4 py-2 text-center font-semibold text-blue-600 hover:text-blue-800 cursor-pointer">Buy all</a></td>
+                    <td><button onclick="choosePaymentMethod1()" class="px-4 py-2 text-center font-semibold text-blue-600 hover:text-blue-800 cursor-pointer">Buy all</button></td>
                 </tr>
             </tfoot>
         </table>
     {% else %}
         <p class="text-gray-600">You have no products in your cart yet.</p>
     {% endif %}
+<div id="paymentModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 hidden z-50">
+  <div class="bg-white p-6 rounded-lg shadow-lg max-w-sm w-full text-center">
+    <h2 class="text-lg font-semibold mb-4">Choose Payment Method</h2>
+    <div class="space-y-2">
+      <button onclick="redirectToPayment('cod')" class="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700">Cash on Delivery</button>
+      <button onclick="" class="w-full bg-blue-600 text-white py-2 rounded cursor-not-allowed hover:bg-blue-700">Online Payment</button>
+      <button onclick="closeModal()" class="text-gray-500 hover:text-red-600 text-sm mt-2">Cancel</button>
+    </div>
+  </div>
 </div>
+
+<div id="paymentModal1" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 hidden z-50">
+  <div class="bg-white p-6 rounded-lg shadow-lg max-w-sm w-full text-center">
+    <h2 class="text-lg font-semibold mb-4">Choose Payment Method</h2>
+    <div class="space-y-2">
+      <button onclick="redirectToPayment1('cod')" class="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700">Cash on Delivery</button>
+      <button onclick="" class="w-full bg-blue-600 text-white py-2 rounded cursor-not-allowed hover:bg-blue-700">Online Payment</button>
+      <button onclick="closeModal1()" class="text-gray-500 hover:text-red-600 text-sm mt-2">Cancel</button>
+    </div>
+  </div>
+</div>
+
+</div>
+<script>
+  let selectedProductId = null;
+
+  function choosePaymentMethod(cartItemId) {
+    selectedCartId = cartItemId;
+    document.getElementById('paymentModal').classList.remove('hidden');
+  }
+  function redirectToPayment(method) {
+    if (selectedCartId) {
+      window.location.href = `/cart-lists/buynow/${selectedCartId}/?payment=${method}`;
+    }
+  }
+
+  function closeModal() {
+    document.getElementById('paymentModal').classList.add('hidden');
+    selectedProductId = null;
+  }
+
+  function choosePaymentMethod1() {
+    document.getElementById('paymentModal1').classList.remove('hidden');
+  }
+
+  function redirectToPayment1(method) {
+      window.location.href = `/cart-lists/buyall/?payment=${method}`;
+  }
+
+  function closeModal1() {
+    document.getElementById('paymentModal1').classList.add('hidden');
+  }
+</script>
 {% endblock %}

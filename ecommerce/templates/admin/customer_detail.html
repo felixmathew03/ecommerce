@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>View Customer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 text-gray-900">
+    <div class="max-w-5xl mx-auto px-4 py-8">
+        <h2 class="text-3xl font-bold mb-6">Customer Details</h2>
+
+        <div class="bg-white shadow rounded-lg mb-8 p-6">
+            <h3 class="text-xl font-semibold mb-4">
+                {{ customer.cust_name }}
+                <span class="text-gray-500 text-sm">({{ customer.cust_username }})</span>
+            </h3>
+            <p class="mb-2"><span class="font-medium">Email:</span> {{ customer.cust_email }}</p>
+            <p><span class="font-medium">Phone:</span> {{ customer.cust_phone }}</p>
+        </div>
+
+        <h4 class="text-2xl font-semibold mb-4">Addresses</h4>
+        {% if customer.addresses.all %}
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {% for address in customer.addresses.all %}
+                <div class="bg-white shadow rounded-lg p-5 border {% if address.is_default %}border-green-500{% else %}border-gray-200{% endif %}">
+                    <p class="mb-1">{{ address.address_line1 }}</p>
+                    {% if address.address_line2 %}
+                        <p class="mb-1">{{ address.address_line2 }}</p>
+                    {% endif %}
+                    <p class="mb-1">{{ address.city }}, {{ address.state }} - {{ address.postal_code }}</p>
+                    {% if address.is_default %}
+                        <span class="inline-block px-2 py-1 text-xs font-semibold text-green-800 bg-green-200 rounded">Default Address</span>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="text-gray-600">No addresses found for this customer.</p>
+        {% endif %}
+    </div>
+</body>
+</html>

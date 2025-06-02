@@ -11,6 +11,8 @@ urlpatterns = [
     path('adminn/add-product/', views.add_product, name='add_product'),
     path('adminn/orders/', views.view_orders, name='view_orders'),
     path('adminn/orders/update/<int:order_id>/', views.update_order_status, name='update_order_status'),
+    path('adminn/customers/', views.manage_customers, name='manage_customers'),
+    path('adminn/customer_details/<int:customer_id>', views.customer_detail_admin, name='customer_detail_admin'),
     
     path('product/delete/<int:pk>/', views.delete_product, name='delete_product'),
     path('product/<int:pk>/', views.product_detail, name='product_detail'),
@@ -32,4 +34,6 @@ urlpatterns = [
     path('add-to-favourite/<int:product_id>/', views.add_to_favourite, name='add_to_favourite'),
     path('remove-from-favourite/<int:product_id>/', views.remove_from_favourite, name='remove_from_favourite'),
     path('favourites/', views.favourites, name='favourites'),
+    path('add-address/<int:customer_id>/',views.add_address,name='add_address'),
+    path('view-address/<int:customer_id>/',views.address_list,name='view_address'),
 ]

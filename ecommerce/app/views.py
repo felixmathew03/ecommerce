@@ -2,10 +2,11 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
-from .models import Category, Product, Customer, OrderItem, Order,OrderStatus, Cart, CartItem, Favourite, FavouriteItem
+from .models import Category, Product, Customer, OrderItem, Order,OrderStatus, Cart, CartItem, Favourite, FavouriteItem, Address
 from django.views.decorators.http import require_POST
 import bcrypt
 from django.contrib import messages
+from django.core.paginator import Paginator
 
 def getuser(request):
     user=False
@@ -105,7 +106,7 @@ def customer_login(request):
 
 def customer_logout(request):
     if getuser(request):
-        messages.success(request,"")
+        messages.success(request,"Logged Out")
         messages.warning(request,"")
         messages.error(request,"")
         del request.session['user']
@@ -138,8 +139,31 @@ def buy_now(request, product_id):
 
     customer = get_object_or_404(Customer, cust_username=request.session['user'])
     product = get_object_or_404(Product, pk=product_id)
-    CartItem.objects.filter(product=product).delete()
-    order = Order.objects.create(customer=customer)
+
+    payment_method = request.GET.get('payment')
+    if payment_method not in ['cod', 'online']:
+        messages.warning(request, "Invalid payment method selected.")
+        return redirect('index')
+
+    address_id = request.GET.get('address_id')
+    if address_id:
+        try:
+            address = Address.objects.get(pk=address_id, customer=customer)
+        except Address.DoesNotExist:
+            messages.error(request, "Invalid address selected.")
+            return redirect('address_list', customer_id=customer.id)
+    else:
+        # Fallback: use default or first address
+        address = customer.addresses.filter(is_default=True).first() or customer.addresses.first()
+        if not address:
+            messages.info(request, "Please add an address before placing an order.")
+            return redirect('add_address', customer_id=customer.id)
+
+    order = Order.objects.create(
+        customer=customer,
+        address=address,
+        payment_method=payment_method
+    )
 
     OrderItem.objects.create(
         order=order,
@@ -148,7 +172,7 @@ def buy_now(request, product_id):
         price_at_order=product.p_price
     )
 
-    return redirect("order_confirmation",order_id=order.id)  
+    return redirect('order_confirmation', order_id=order.id)
 
 def order_confirmation(request, order_id):
     order = get_object_or_404(Order, pk=order_id, customer__cust_username=request.session['user'])
@@ -258,8 +282,9 @@ def cancel_order(request, order_id):
     return render('orders_list')
 
 def buy_all(request):
+    print("hello")
     if not getuser(request):  
-        messages.error(request, "You must be logged in to buy a product.")
+        messages.error(request, "You must be logged in to buy products.")
         return redirect('login')
 
     customer = get_object_or_404(Customer, cust_username=request.session['user'])
@@ -268,37 +293,83 @@ def buy_all(request):
         cart = Cart.objects.get(customer=customer)
     except Cart.DoesNotExist:
         messages.error(request, "Your cart is empty.")
-        return redirect("cart")
+        return redirect("cart_list")
 
     cart_items = CartItem.objects.filter(cart=cart)
-
     if not cart_items.exists():
         messages.warning(request, "No items in your cart to purchase.")
-        return redirect("cart")
+        return redirect("cart_list")
+    
+    payment_method = request.GET.get('payment')
+    if payment_method not in ['cod', 'online']:
+        messages.warning(request, "Invalid payment method selected.")
+        return redirect('cart_list')
 
-    order = Order.objects.create(customer=customer)
+    # Get address
+    address_id = request.GET.get('address_id')
+    if address_id:
+        try:
+            address = Address.objects.get(pk=address_id, customer=customer)
+        except Address.DoesNotExist:
+            messages.error(request, "Invalid address selected.")
+            return redirect('address_list', customer_id=customer.id)
+    else:
+        address = customer.addresses.filter(is_default=True).first() or customer.addresses.first()
+        if not address:
+            messages.info(request, "Please add an address before placing an order.")
+            return redirect('add_address', customer_id=customer.id)
+
+    order = Order.objects.create(
+        customer=customer,
+        address=address,
+        payment_method=payment_method
+    )
+
     for c in cart_items:
         OrderItem.objects.create(
             order=order,
             product=c.product,
-            quantity=c.quantity,  
+            quantity=c.quantity,
             price_at_order=c.product.p_price
         )
+
     cart_items.delete()
 
     return redirect("order_confirmation", order_id=order.id)
 
 def buy_now_from_cart(request, cart_item_id):
     if not getuser(request):
-        messages.error(request, "You must be logged in to add to cart.")
+        messages.error(request, "You must be logged in to proceed.")
         return redirect('login')
 
     customer = get_object_or_404(Customer, cust_username=request.session['user'])
 
     cart_item = get_object_or_404(CartItem, pk=cart_item_id, cart__customer=customer)
 
-    order = Order.objects.create(customer=customer)
-    print(cart_item.quantity)
+    payment_method = request.GET.get('payment')
+    if payment_method not in ['cod', 'online']:
+        messages.warning(request, "Invalid payment method selected.")
+        return redirect('cart_list')  
+
+    address_id = request.GET.get('address_id')
+    if address_id:
+        try:
+            address = Address.objects.get(pk=address_id, customer=customer)
+        except Address.DoesNotExist:
+            messages.error(request, "Invalid address selected.")
+            return redirect('address_list', customer_id=customer.id)
+    else:
+        address = customer.addresses.filter(is_default=True).first() or customer.addresses.first()
+        if not address:
+            messages.info(request, "Please add an address before placing an order.")
+            return redirect('add_address', customer_id=customer.id)
+
+    order = Order.objects.create(
+        customer=customer,
+        address=address,
+        payment_method=payment_method
+    )
+
     OrderItem.objects.create(
         order=order,
         product=cart_item.product,
@@ -309,6 +380,7 @@ def buy_now_from_cart(request, cart_item_id):
     cart_item.delete()
 
     return redirect("order_confirmation", order_id=order.id)
+
 
 def add_to_favourite(request,product_id):
     print("favourites")
@@ -368,6 +440,30 @@ def favourites(request):
 
     return render(request, 'favourites.html', {'favourites': favourites})
 
+def add_address(request, customer_id):
+    customer = get_object_or_404(Customer, pk=customer_id)
+
+    if request.method == 'POST':
+        Address.objects.create(
+            customer=customer,
+            address_line1=request.POST.get('address_line1'),
+            address_line2=request.POST.get('address_line2', ''),
+            city=request.POST.get('city'),
+            state=request.POST.get('state'),
+            postal_code=request.POST.get('postal_code'),
+            is_default=bool(request.POST.get('is_default'))
+        )
+        return redirect('customer_profile')  
+
+    return render(request, 'add_address.html')
+
+def address_list(request, customer_id):
+    customer = get_object_or_404(Customer, pk=customer_id)
+    addresses = customer.addresses.all() 
+    return render(request, 'view_address.html', {
+        'customer': customer,
+        'addresses': addresses
+    })
 
 
 
@@ -390,13 +486,32 @@ def admin_login(request):
 def admin_dashboard(request):
     if not request.user.is_staff:
         return HttpResponse("Unauthorized", status=401)
+
     category_id = request.GET.get('category')
+    page_number1 = request.GET.get('page1')
+    page_number2 = request.GET.get('page2')
+
+    all_categories = Category.objects.all().order_by('c_name')
+    paginator1 = Paginator(all_categories, 4)
+    page_obj1 = paginator1.get_page(page_number1)
+    categories = page_obj1.object_list
+
     if category_id:
-        products = Product.objects.filter(category_id=category_id)
+        all_products = Product.objects.filter(category_id=category_id).order_by('p_name')
     else:
-        products = Product.objects.all()
-    categories=Category.objects.all()
-    return render(request, 'admin/dashboard.html',{'categories':categories,'products':products})
+        all_products = Product.objects.all().order_by('p_name')
+        
+    paginator2 = Paginator(all_products, 4)
+    page_obj2 = paginator2.get_page(page_number2)
+    products = page_obj2.object_list
+
+    return render(request, 'admin/dashboard.html', {
+        'categories': categories,
+        'products': products,
+        'page_obj1': page_obj1,
+        'page_obj2': page_obj2,
+        'selected_category': category_id
+    })
 
 @login_required(login_url='admin_login')
 def add_category(request):
@@ -514,11 +629,21 @@ def update_order_status(request, order_id):
 def delete_product(request, pk):
     product = get_object_or_404(Product, pk=pk)
     product.delete()
-    return redirect('admin_dashboard')  # or the relevant view name where you list products
+    return redirect('admin_dashboard') 
+
+@login_required(login_url='admin_login')
+def manage_customers(request):
+    customers = Customer.objects.all().values('id', 'cust_name', 'cust_email', 'cust_phone', 'cust_username')  
+    return render(request, 'admin/manage_customers.html', {'customers': customers})
+
+@login_required(login_url='admin_login')
+def customer_detail_admin(request, customer_id):
+    customer = get_object_or_404(Customer, pk=customer_id)
+    return render(request, 'admin/customer_detail.html', {'customer': customer})
 
 @login_required(login_url='admin_login')
 def admin_logout(request):
-    messages.success(request,"")
+    messages.success(request,"Logged Out")
     messages.warning(request,"")
     messages.error(request,"")
     logout(request)

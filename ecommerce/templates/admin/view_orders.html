@@ -13,7 +13,6 @@
             <h1 class="text-2xl font-bold ">All Orders</h1>
             <div class="flex items-center gap-2">
                 <form method="get" class="flex items-center  space-x-4">
-                    <label for="status" class="mr-2 font-medium">Filter by Status:</label>
                     <select name="status" id="status" class="border rounded px-3 py-1">
                         <option value="">All</option>
                         {% for value, label in status_choices %}
@@ -30,7 +29,7 @@
             <thead class="bg-gray-50">
                 <tr>
                     <th class="px-6 py-3 text-left font-medium text-gray-500">Order ID</th>
-                    <th class="px-6 py-3 text-left font-medium text-gray-500">Customer</th>
+                    <th class="px-6 py-3 text-left font-medium text-gray-500">Customer ID</th>
                     <th class="px-6 py-3 text-left font-medium text-gray-500">Date</th>
                     <th class="px-6 py-3 text-left font-medium text-gray-500">Status</th>
                     <th class="px-6 py-3 text-right font-medium text-gray-500">Total</th>
@@ -41,11 +40,12 @@
                 {% for order in orders %}
                 <tr>
                     <td class="px-6 py-4">#{{ order.id }}</td>
-                    <td class="px-6 py-4">{{ order.customer.cust_username }}</td>
+                    <td class="px-6 py-4"><a href="{% url 'customer_detail_admin' order.customer.id %}">#{{ order.customer.id }}</a></td>
                     <td class="px-6 py-4">{{ order.created_at|date:"Y-m-d H:i" }}</td>
                     <td class="px-6 py-4">
                         <span class="px-2 py-1 rounded text-white
                             {% if order.status == 'Processing' %}bg-yellow-500
+                            {% elif order.status == 'Packed' %} bg-orange-500
                             {% elif order.status == 'Shipped' %}bg-blue-500
                             {% elif order.status == 'Delivered' %}bg-green-600
                             {% elif order.status == 'Cancelled' %}bg-red-600

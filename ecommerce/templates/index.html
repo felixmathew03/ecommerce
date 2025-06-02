@@ -1,23 +1,52 @@
-{% extends 'base.html' %}
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Index</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+</head>
+<body class="flex flex-col min-h-screen bg-gray-50">
 
-{% block title %}Index{% endblock %}
+    <nav class="bg-white border-b border-gray-200">
+  <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+    <a href="/" class="text-xl font-bold text-blue-600">Shopy</a>
+    <div class="space-x-4 flex items-center relative" x-data="{ open: false }">
+      <a href="/" class="text-gray-700 hover:text-blue-500">Home</a>
+      <a href="{% url 'orders_list' %}" class="text-gray-700 hover:text-blue-500">Orders</a>
+      <a href="{% url 'cart_list' %}" class="text-gray-700 hover:text-blue-500">Cart</a>
+      <a href="{% url 'favourites' %}" class="text-gray-700 hover:text-blue-500">Favourites</a>
 
-{% block content %}
-<div class="container mx-auto px-4">
+      <button @click="open = !open" class="text-indigo-900 font-semibold hover:text-blue-500 focus:outline-none">
+        <img class="size-6" src="{% static 'images/male-user.png' %}" alt="">
+      </button>
 
-  <div class="flex flex-wrap -mx-4 py-2 h-[80vh]">
-    <!-- Categories Sidebar -->
-    <div class="w-full md:w-1/5 px-4   md:mb-0 flex flex-col justify-start gap-5">
+      <!-- Dropdown -->
+      <div x-show="open" @click.outside="open = false" class="absolute top-8 right-1 bg-white border rounded shadow-md w-24 py-2 z-50">
+        <a href="{% url 'customer_profile' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Profile</a>
+        <a href="{% url 'logout' %}" class="block px-4 py-2 text-sm text-red-600 hover:bg-gray-100">Logout</a>
+      </div>
+    </div>
+  </div>
+</nav>
+
+
+    <main class="flex-grow px-4 py-6">
+  <div class="flex flex-col md:flex-row gap-6">
+
+    <!-- Sidebar -->
+    <aside class="w-full md:w-1/4 lg:w-1/5 space-y-6">
       <form method="get" action="{% url 'index' %}" class="relative border shadow-lg rounded-xl border-gray-300 bg-white">
         <input  
           placeholder="Search..."
-          class="input rounded-xl w-5/6 px-5 py-3 w-56 transition-all outline-none"
+          class="rounded-xl w-full px-5 py-3 transition-all outline-none"
           name="search"
           type="search"
           value="{{ request.GET.search|default:'' }}"
         />
         <button type="submit" class="absolute top-3 right-3 text-gray-500">
-          <svg class="size-6" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <svg class="w-6 h-6" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" fill="none">
             <path
               d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"
               stroke-linejoin="round"
@@ -27,50 +56,49 @@
         </button>
       </form>
 
-      <div class="">
-        <h2 class="text-3xl font-bold mb-4 text-slate-700">Categories</h2>
+      <div>
+        <h2 class="text-2xl font-bold mb-4 text-slate-700">Categories</h2>
         <ul class="bg-white shadow rounded p-4 space-y-2">
           <li>
-            <a href="{% url 'index' %}" class="text-blue-600 hover:underline">
-              All
-            </a>
+            <a href="{% url 'index' %}" class="text-blue-600 hover:underline">All</a>
           </li>
           {% for category in categories %}
           <li>
-            <a href="{% url 'index' %}?category={{ category.id }}" class="text-blue-600 hover:underline">
-              {{ category.c_name }}
-            </a>
+            <a href="{% url 'index' %}?category={{ category.id }}" class="text-blue-600 hover:underline">{{ category.c_name }}</a>
           </li>
           {% empty %}
           <li>No categories found.</li>
           {% endfor %}
         </ul>
       </div>
-    </div>
+    </aside>
 
-    <!-- Products Grid -->
-    <div class="w-full h-full overflow-y-scroll  md:w-4/5 px-4">
-      <h2 class="text-3xl font-bold mb-4 text-slate-700 ">Products</h2>
-      <div class="h-6/7 grid grid-cols-1  sm:grid-cols-2 lg:grid-cols-3 gap-6">
+    <!-- Product Grid -->
+    <section class="w-full md:w-3/4 lg:w-4/5">
+      <h2 class="text-2xl font-bold mb-4 text-slate-700">Products</h2>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {% for product in products %}
-        <div class="bg-white shadow rounded p-4 flex flex-col">
+        <a href="./product/{{product.pk}}" class="bg-white shadow rounded p-4 flex flex-col transition duration-300 hover:scale-105">
           {% if product.p_image %}
             <img src="{{ product.p_image.url }}" alt="{{ product.p_name }}" class="mb-4 rounded h-48 object-cover">
           {% else %}
-            <div class="bg-gray-200 h-48 mb-4 rounded flex items-center justify-center text-gray-500">
-              No Image
-            </div>
+            <div class="bg-gray-200 h-48 mb-4 rounded flex items-center justify-center text-gray-500">No Image</div>
           {% endif %}
           <h3 class="text-lg font-semibold">{{ product.p_name }}</h3>
           <p class="text-gray-600 mb-2">Category: {{ product.category.c_name }}</p>
           <p class="font-bold text-green-600">${{ product.p_price }}</p>
-          <a href="./product/{{product.pk}}" class="mt-auto inline-block text-blue-600 hover:underline">View Details</a>
-        </div>
+        </a>
         {% empty %}
         <p>No products available.</p>
         {% endfor %}
       </div>
-    </div>
+    </section>
+
   </div>
-</div>
-{% endblock %}
+</main>
+
+
+    {% include 'partials/footer.html' %}
+
+</body> 
+</html>

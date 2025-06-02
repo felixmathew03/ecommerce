@@ -27,16 +27,30 @@ class Customer(models.Model):
     cust_username=models.CharField(max_length=255)
     cust_password=models.TextField(max_length=255)
     
+class Address(models.Model):
+    customer = models.ForeignKey('Customer', on_delete=models.CASCADE, related_name='addresses')
+    address_line1 = models.CharField(max_length=255)
+    address_line2 = models.CharField(max_length=255, blank=True, null=True)
+    city = models.CharField(max_length=100)
+    state = models.CharField(max_length=100)
+    postal_code = models.CharField(max_length=20)
+    is_default = models.BooleanField(default=False)
 
+    def __str__(self):
+        return f"{self.address_line1}, {self.city} ({self.customer.cust_name})"
+    
 class OrderStatus(models.TextChoices):
     PROCESSING = 'Processing', _('Processing')
     PACKED = 'Packed', _('Packed')
+    SHIPPED = 'Shipped', _('Shipped')
     DELIVERED = 'Delivered', _('Delivered')
     CANCELLED = 'Cancelled', _('Cancelled')
 
 class Order(models.Model):
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE)
+    address = models.ForeignKey('Address', on_delete=models.PROTECT)
     created_at = models.DateTimeField(auto_now_add=True)
+    payment_method = models.CharField(max_length=20, choices=[('cod', 'Cash on Delivery'), ('online', 'Online')])
     status = models.CharField(
         max_length=50,
         choices=OrderStatus.choices,
