@@ -38,4 +38,5 @@ urlpatterns = [
     path('add-address/<int:customer_id>/',views.add_address,name='add_address'),
     path('view-address/<int:customer_id>/',views.address_list,name='view_address'),
     path('delete-address/<int:address_id>/',views.delete_address,name='delete_address'),
+    path('edit-address/<int:address_id>/',views.edit_address,name='edit_address'),
 ]

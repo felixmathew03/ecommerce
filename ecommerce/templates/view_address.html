@@ -9,7 +9,7 @@
     {% if addresses %}
       <div class=" grid grid-cols-1  md:grid-cols-3 gap-6">
         {% for address in addresses %}
-          <div class="bg-gray-800 p-6 shadow rounded border border-gray-700 relative">
+          <div class="bg-gray-800 px-6 py-2 shadow rounded border border-gray-700 relative">
             {% if address.is_default %}
               <span class="absolute top-2 right-2 bg-green-100 text-green-800 text-xs font-semibold px-2 py-1 rounded">Default</span>
             {% endif %}
@@ -19,6 +19,7 @@
             {% endif %}
             <p class="text-gray-400">{{ address.city }}, {{ address.state }}</p>
             <p class="text-gray-400">{{ address.postal_code }}</p>
+            <a href="{% url 'edit_address' address.id %}" class="inline-block bg-slate-600 mt-2 text-white px-2 py-1 rounded hover:bg-slate-700">Edit Address</a>
             <form method="post" action="{% url 'delete_address' address.id %}" class="absolute bottom-2 right-2">
               {% csrf_token %}
               <button type="submit" class="size-8  rounded bg-red-500 flex justify-center items-center"><img src="{% static 'images/delete.png' %}" class="size-3/4 object-contain cursor-pointer" alt=""></button>

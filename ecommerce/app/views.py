@@ -493,37 +493,40 @@ def delete_address(request, address_id):
 
 def edit_address(request, address_id):
     customer = get_object_or_404(Customer, cust_username=request.session['user'])
-    address = get_object_or_404(Address, pk=address_id)
+    address = get_object_or_404(Address, pk=address_id, customer=customer)  # Optional: ensure it's their address
 
     success = None
     error = None
+
     if request.method == "POST":
-        address_line1=request.POST.get('address_line1'),
-        address_line2=request.POST.get('address_line2', ''),
-        city=request.POST.get('city'),
-        state=request.POST.get('state'),
-        postal_code=request.POST.get('postal_code'),
-        is_default=bool(request.POST.get('is_default'))
+        address_line1 = request.POST.get('address_line1')
+        address_line2 = request.POST.get('address_line2', '')
+        city = request.POST.get('city')
+        state = request.POST.get('state')
+        postal_code = request.POST.get('postal_code')
+        is_default = request.POST.get('is_default') == 'on' 
 
-        if not all([address_line1, address_line2, city, state,postal_code,is_default]):
-            error = "Some fields are missing."
+        if not all([address_line1, city, state, postal_code]):
+            error = "Some required fields are missing."
         else:
-            address['address_line1']=address_line1
-            address['address_line2']=address_line2
-            address['city']=city
-            address['state']=state
-            address['postal_code']=postal_code
-            address['is_default']=is_default
+            if is_default:
+                Address.objects.filter(customer=customer, is_default=True).update(is_default=False)
+
+            address.address_line1 = address_line1
+            address.address_line2 = address_line2
+            address.city = city
+            address.state = state
+            address.postal_code = postal_code
+            address.is_default = is_default
             address.save()
-            success = f"Product '{address.address_line1}' edited successfully."
 
-    return render(request, 'view_address.html', {
-        'customer': customer,
+            success = f"Address '{address.address_line1}' updated successfully."
+
+    return render(request, 'edit_address.html', {
         'address': address,
-        'error':error,
-        'success':success
+        'error': error,
+        'success': success
     })
-
 
 # Admin section
 def admin_login(request):
