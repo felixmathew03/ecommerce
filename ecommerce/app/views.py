@@ -19,23 +19,27 @@ def getuser(request):
 def index(request):
     if not getuser(request):
         return redirect(customer_login)
-
+    
     category_id = request.GET.get('category')
     search_query = request.GET.get('search')
-
+    page_number = request.GET.get('page')
+    all_categories = Category.objects.all().order_by('c_name')
+    paginator = Paginator(all_categories, 4)
+    page_obj = paginator.get_page(page_number)
+    categories = page_obj.object_list
+    
     products = Product.objects.all()
-
     if category_id:
         products = products.filter(category_id=category_id)
 
     if search_query:
         products = products.filter(p_name__icontains=search_query)
 
-    categories = Category.objects.all()
-    
     return render(request, 'index.html', {
         'products': products,
-        'categories': categories
+        'categories': categories,
+        'selected_category': category_id,
+        'page_obj': page_obj
     })
 
 def product_detail(request, pk):
@@ -58,7 +62,13 @@ def product_detail(request, pk):
             is_favourite = True
     except Favourite.DoesNotExist:
         pass   
-    return render(request, 'product_detail.html', {'product': product, 'is_cart': is_cart, 'is_favourite':is_favourite})
+    related_products = Product.objects.filter(category=product.category).exclude(id=product.id)[:4]
+    return render(request, 'product_detail.html', 
+                {'product': product, 
+                   'is_cart': is_cart, 
+                   'related_products': related_products,
+                   'is_favourite':is_favourite
+                })
 
 #user section
 
@@ -453,7 +463,7 @@ def add_address(request, customer_id):
             postal_code=request.POST.get('postal_code'),
             is_default=bool(request.POST.get('is_default'))
         )
-        return redirect('customer_profile')  
+        return redirect('view_address', customer_id=customer.id)
 
     return render(request, 'add_address.html')
 
@@ -465,8 +475,54 @@ def address_list(request, customer_id):
         'addresses': addresses
     })
 
+def delete_address(request, address_id):
+    customer = get_object_or_404(Customer, cust_username=request.session['user'])
+    print(customer.addresses.all())
+    address = get_object_or_404(Address, pk=address_id)
+    if address in customer.addresses.all():
+        if request.method == 'POST':
+            address.delete()
+            print(address)  
+            return redirect('view_address', customer_id=customer.id)
 
+    addresses = customer.addresses.all()
+    return render(request, 'view_address.html', {
+        'customer': customer,
+        'addresses': addresses
+    })
 
+def edit_address(request, address_id):
+    customer = get_object_or_404(Customer, cust_username=request.session['user'])
+    address = get_object_or_404(Address, pk=address_id)
+
+    success = None
+    error = None
+    if request.method == "POST":
+        address_line1=request.POST.get('address_line1'),
+        address_line2=request.POST.get('address_line2', ''),
+        city=request.POST.get('city'),
+        state=request.POST.get('state'),
+        postal_code=request.POST.get('postal_code'),
+        is_default=bool(request.POST.get('is_default'))
+
+        if not all([address_line1, address_line2, city, state,postal_code,is_default]):
+            error = "Some fields are missing."
+        else:
+            address['address_line1']=address_line1
+            address['address_line2']=address_line2
+            address['city']=city
+            address['state']=state
+            address['postal_code']=postal_code
+            address['is_default']=is_default
+            address.save()
+            success = f"Product '{address.address_line1}' edited successfully."
+
+    return render(request, 'view_address.html', {
+        'customer': customer,
+        'address': address,
+        'error':error,
+        'success':success
+    })
 
 
 # Admin section
@@ -624,9 +680,10 @@ def update_order_status(request, order_id):
         'order_items': order_items,
         'status_choices': OrderStatus.choices,
     })
-
-@require_POST
+    
+@login_required(login_url='admin_login')
 def delete_product(request, pk):
+    print(pk)
     product = get_object_or_404(Product, pk=pk)
     product.delete()
     return redirect('admin_dashboard') 
@@ -641,6 +698,47 @@ def customer_detail_admin(request, customer_id):
     customer = get_object_or_404(Customer, pk=customer_id)
     return render(request, 'admin/customer_detail.html', {'customer': customer})
 
+@login_required(login_url='admin_login')
+def edit_product(request, product_id):
+    if not request.user.is_staff:
+        return HttpResponse("Unauthorized", status=401)
+
+    product = get_object_or_404(Product, pk=product_id)  # You were using `Customer` instead of `Product`
+    success = None
+    error = None
+    categories=Category.objects.all()
+    if request.method == "POST":
+        name = request.POST.get("p_name", "").strip()
+        desc = request.POST.get("p_description", "").strip()
+        price = request.POST.get("p_price")
+        stock = request.POST.get("p_stock") or 0
+        category_id = request.POST.get("category")
+        image = request.FILES.get("p_image")
+
+        if not all([name, desc, price, category_id]):
+            error = "Some fields are missing."
+        else:
+            try:
+                category = get_object_or_404(Category, pk=category_id)
+                product.p_name = name
+                product.p_description = desc
+                product.p_price = price
+                product.p_stock = stock
+                product.category = category
+                if image:
+                    product.p_image = image
+                product.save()
+                success = f"Product '{product.p_name}' edited successfully."
+            except Category.DoesNotExist:
+                error = "Invalid category selected."
+
+    return render(request, 'admin/edit_product.html', {
+        'product': product,
+        'success': success,
+        'categories':categories,
+        'error': error
+    })
+    
 @login_required(login_url='admin_login')
 def admin_logout(request):
     messages.success(request,"Logged Out")

@@ -1,15 +1,15 @@
 {% load static %}
-<nav class="bg-white border-b border-gray-200">
+<nav class="bg-gray-900 border-b border-gray-600">
   <div class="container mx-auto px-4 py-4 flex justify-between items-center">
     <a href="/" class="text-xl font-bold text-blue-600">Shopy</a>
     <div class="space-x-4 flex items-center relative" x-data="{ open: false }">
-      <a href="/" class="text-gray-700 hover:text-blue-500">Home</a>
-      <a href="{% url 'orders_list' %}" class="text-gray-700 hover:text-blue-500">Orders</a>
-      <a href="{% url 'cart_list' %}" class="text-gray-700 hover:text-blue-500">Cart</a>
-      <a href="{% url 'favourites' %}" class="text-gray-700 hover:text-blue-500">Favourites</a>
+      <a href="/" class="text-gray-400 hover:text-blue-500">Home</a>
+      <a href="{% url 'orders_list' %}" class="text-gray-400 hover:text-blue-500">Orders</a>
+      <a href="{% url 'cart_list' %}" class="text-gray-400 hover:text-blue-500">Cart</a>
+      <a href="{% url 'favourites' %}" class="text-gray-400 hover:text-blue-500">Favourites</a>
 
       <button @click="open = !open" class="text-indigo-900 font-semibold hover:text-blue-500 focus:outline-none">
-        <img class="size-6" src="{% static 'images/male-user.png' %}" alt="">
+        <img class="size-6" src="{% static 'images/user.png' %}" alt="">
       </button>
 
       <!-- Dropdown -->

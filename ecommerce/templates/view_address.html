@@ -1,28 +1,28 @@
+{% extends 'base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>My Addresses</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="bg-gray-50 min-h-screen py-10 px-4">
-  <div class="max-w-4xl mx-auto">
-    <h1 class="text-3xl font-bold mb-6 text-slate-800">My Addresses</h1>
+{% block title %}View Address{% endblock %}
+
+{% block content %}
+    <div class="max-w-4xl mx-auto mt-5">
+    <h1 class="text-3xl font-bold mb-6 text-slate-400">My Addresses</h1>
 
     {% if addresses %}
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+      <div class=" grid grid-cols-1  md:grid-cols-3 gap-6">
         {% for address in addresses %}
-          <div class="bg-white p-6 shadow rounded border border-gray-200 relative">
+          <div class="bg-gray-800 p-6 shadow rounded border border-gray-700 relative">
             {% if address.is_default %}
               <span class="absolute top-2 right-2 bg-green-100 text-green-800 text-xs font-semibold px-2 py-1 rounded">Default</span>
             {% endif %}
-            <p class="font-medium text-gray-700">{{ address.address_line1 }}</p>
+            <p class="font-medium text-gray-300">{{ address.address_line1 }}</p>
             {% if address.address_line2 %}
-              <p class="text-gray-600">{{ address.address_line2 }}</p>
+              <p class="text-gray-400">{{ address.address_line2 }}</p>
             {% endif %}
-            <p class="text-gray-600">{{ address.city }}, {{ address.state }}</p>
-            <p class="text-gray-600">{{ address.postal_code }}</p>
+            <p class="text-gray-400">{{ address.city }}, {{ address.state }}</p>
+            <p class="text-gray-400">{{ address.postal_code }}</p>
+            <form method="post" action="{% url 'delete_address' address.id %}" class="absolute bottom-2 right-2">
+              {% csrf_token %}
+              <button type="submit" class="size-8  rounded bg-red-500 flex justify-center items-center"><img src="{% static 'images/delete.png' %}" class="size-3/4 object-contain cursor-pointer" alt=""></button>
+            </form>
           </div>
         {% endfor %}
       </div>
@@ -36,5 +36,4 @@
       </a>
     </div>
   </div>
-</body>
-</html>
+{% endblock %}

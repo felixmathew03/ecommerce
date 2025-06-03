@@ -1,0 +1,62 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Edit Product</title>
+    <link rel="stylesheet" href="{% static 'css/add-product.css' %}">
+</head>
+<body>
+    <div class="container">
+        <h2>Edit Product</h2>
+
+        {% if error %}
+            <p class="error">{{ error }}</p>
+        {% endif %}
+
+        {% if success %}
+            <p class="success">{{ success }}</p>
+        {% endif %}
+
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <label>Product Name:</label><br>
+            <input type="text" name="p_name" value="{{ product.p_name|default_if_none:'' }}"><br><br>
+
+            <label>Description:</label><br>
+            <!-- 'value' is invalid in a <textarea> -->
+            <textarea name="p_description">{{ product.p_description|default_if_none:'' }}</textarea><br><br>
+
+            <label>Price (₹):</label><br>
+            <input type="number" step="0.01" name="p_price" value="{{ product.p_price|default_if_none:'' }}"><br><br>
+
+            <label>Stock:</label><br>
+            <input type="number" name="p_stock" value="{{ product.p_stock|default_if_none:'' }}"><br><br>
+
+            <label>Category:</label><br>
+            <select name="category">
+                <!-- Default selected category -->
+                {% if product.category %}
+                    <option value="{{ product.category.id }}">{{ product.category }}</option>
+                {% endif %}
+                {% for cat in categories %}
+                    {% if product.category and cat.id != product.category.id %}
+                        <option value="{{ cat.id }}">{{ cat.c_name }}</option>
+                    {% elif not product.category %}
+                        <option value="{{ cat.id }}">{{ cat.c_name }}</option>
+                    {% endif %}
+                {% endfor %}
+            </select><br><br>
+
+            <label>Product Image:</label><br>
+            <input type="file" name="p_image"><br><br>
+
+            <button type="submit">Update Product</button>
+        </form>
+
+        <br>
+        <a href="{% url 'admin_dashboard' %}">Back to Dashboard</a>
+    </div>
+</body>
+</html>

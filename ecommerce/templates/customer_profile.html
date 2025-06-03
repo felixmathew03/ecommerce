@@ -3,12 +3,12 @@
 {% block title %}Profile{% endblock %}
 
 {% block content %}
-<div class="max-w-6xl mx-auto my-6 p-6 bg-white rounded-lg shadow-md">
+<div class="max-w-6xl mx-auto my-6 p-6 bg-gray-800 rounded-lg shadow-md">
   
   <!-- Profile Header -->
   <div class="flex justify-between items-center border-b pb-4 mb-6">
     <div>
-      <h2 class="text-2xl font-bold text-gray-800">Welcome, {{ customer.cust_name|title }}</h2>
+      <h2 class="text-2xl font-bold text-gray-200">Welcome, {{ customer.cust_name|title }}</h2>
       <p class="text-gray-500">{{ customer.cust_email }}</p>
     </div>
     <div class="space-x-2">
@@ -19,33 +19,41 @@
 
   
   <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-    <a href="{% url 'cart_list' %}" class="bg-gray-100 p-4 rounded-lg text-center hover:shadow flex flex-col items-center gap-5 justify-center">
+    <a href="{% url 'cart_list' %}" class="bg-gray-300 p-4 rounded-lg text-center hover:shadow flex flex-col items-center gap-5 justify-center">
       <img class="size-8" src="{% static 'images/cart.png' %}" alt=""><span class="font-semibold">Cart ({{cart_count}})</span>
     </a>
-    <a href="{% url 'favourites' %}" class="bg-gray-100 p-4 rounded-lg text-center hover:shadow flex flex-col items-center gap-5 justify-center">
+    <a href="{% url 'favourites' %}" class="bg-gray-300 p-4 rounded-lg text-center hover:shadow flex flex-col items-center gap-5 justify-center">
       <img class="size-6" src="{% static 'images/star.png' %}" alt=""><span class="font-semibold">Favourites ({{favourite_count}})</span>
     </a>
-    <a href="{% url 'orders_list' %}" class="bg-gray-100 p-4 rounded-lg text-center hover:shadow flex flex-col items-center gap-5 justify-center">
+    <a href="{% url 'orders_list' %}" class="bg-gray-300 p-4 rounded-lg text-center hover:shadow flex flex-col items-center gap-5 justify-center">
       <img class="size-6" src="{% static 'images/orders.png' %}" alt=""><span class="font-semibold">Orders ({{order_count}})</span>
     </a>
-    <a href="{% url 'view_address' customer.id %}" class="bg-gray-100 p-4 rounded-lg text-center hover:shadow flex flex-col items-center gap-5 justify-center">
-      <img class="size-6" src="{% static 'images/orders.png' %}" alt=""><span class="font-semibold">View Address</span>
+    <a href="{% url 'view_address' customer.id %}" class="bg-gray-300 p-4 rounded-lg text-center hover:shadow flex flex-col items-center gap-5 justify-center">
+      <img class="size-6" src="{% static 'images/address.png' %}" alt=""><span class="font-semibold">View Address</span>
     </a>
   </div>
 
   <div>
-    <h3 class="text-xl font-semibold mb-4 text-gray-800">Your Recent Orders</h3>
+    <h3 class="text-xl font-semibold mb-4 text-gray-400">Your Recent Orders</h3>
     
     {% if orders %}
       <ul class="space-y-4">
         {% for order in orders %}
         <li class="border rounded p-4 flex justify-between items-center">
           <div>
-            <p class="font-semibold">Order #{{ order.id }}</p>
+            <p class="font-semibold text-gray-300">Order #{{ order.id }}</p>
             <p class="text-sm text-gray-500">Placed on {{ order.created_at|date:"F j, Y" }}</p>
           </div>
           <div>
-            <span class="text-sm font-medium text-green-600">{{ order.status }}</span>
+            <span class="text-sm font-medium 
+                                {% if order.status == 'Processing' %} text-yellow-500
+                                {% elif order.status == 'Packed' %} text-orange-500
+                                {% elif order.status == 'Shipped' %} text-blue-500
+                                {% elif order.status == 'Delivered' %} text-green-600
+                                {% elif order.status == 'Cancelled' %} text-red-600
+                                {% else %} text-gray-400
+                                {% endif %}
+            ">{{ order.status }}</span>
           </div>
         </li>
         {% endfor %}

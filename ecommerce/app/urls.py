@@ -9,12 +9,13 @@ urlpatterns = [
     path('adminn/logout/', views.admin_logout, name='admin_logout'),
     path('adminn/addcategory/', views.add_category, name='add_category'),
     path('adminn/add-product/', views.add_product, name='add_product'),
+    path('adminn/edit-product/<int:product_id>', views.edit_product, name='edit_product'),
     path('adminn/orders/', views.view_orders, name='view_orders'),
     path('adminn/orders/update/<int:order_id>/', views.update_order_status, name='update_order_status'),
     path('adminn/customers/', views.manage_customers, name='manage_customers'),
     path('adminn/customer_details/<int:customer_id>', views.customer_detail_admin, name='customer_detail_admin'),
-    
     path('product/delete/<int:pk>/', views.delete_product, name='delete_product'),
+    
     path('product/<int:pk>/', views.product_detail, name='product_detail'),
     path('signup/', views.signup,name='signup'),
     path('login/', views.customer_login,name='login'),
@@ -36,4 +37,5 @@ urlpatterns = [
     path('favourites/', views.favourites, name='favourites'),
     path('add-address/<int:customer_id>/',views.add_address,name='add_address'),
     path('view-address/<int:customer_id>/',views.address_list,name='view_address'),
+    path('delete-address/<int:address_id>/',views.delete_address,name='delete_address'),
 ]

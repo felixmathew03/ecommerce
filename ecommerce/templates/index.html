@@ -3,102 +3,164 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Index</title>
+    <title>Shopy | Home</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              primary: '#8b5cf6', // Violet-500
+              bgDark: '#111827',  // Gray-900
+              cardDark: '#1f2937', // Gray-800
+              borderDark: '#374151' // Gray-700
+            }
+          }
+        }
+      }
+    </script>
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
 </head>
-<body class="flex flex-col min-h-screen bg-gray-50">
+<body class="bg-bgDark text-gray-300">
 
-    <nav class="bg-white border-b border-gray-200">
-  <div class="container mx-auto px-4 py-4 flex justify-between items-center">
-    <a href="/" class="text-xl font-bold text-blue-600">Shopy</a>
-    <div class="space-x-4 flex items-center relative" x-data="{ open: false }">
-      <a href="/" class="text-gray-700 hover:text-blue-500">Home</a>
-      <a href="{% url 'orders_list' %}" class="text-gray-700 hover:text-blue-500">Orders</a>
-      <a href="{% url 'cart_list' %}" class="text-gray-700 hover:text-blue-500">Cart</a>
-      <a href="{% url 'favourites' %}" class="text-gray-700 hover:text-blue-500">Favourites</a>
+<!-- Navbar -->
+<nav class="bg-cardDark border-b border-borderDark sticky top-0 z-50 shadow">
+    <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+        <a href="/" class="text-2xl font-bold text-primary">Shopy</a>
+        <div class="flex items-center gap-6 text-sm" x-data="{ open: false }">
+            <a href="/" class="hover:text-primary">Home</a>
+            <a href="{% url 'orders_list' %}" class="hover:text-primary">Orders</a>
+            <a href="{% url 'cart_list' %}" class="hover:text-primary">Cart</a>
+            <a href="{% url 'favourites' %}" class="hover:text-primary">Favourites</a>
 
-      <button @click="open = !open" class="text-indigo-900 font-semibold hover:text-blue-500 focus:outline-none">
-        <img class="size-6" src="{% static 'images/male-user.png' %}" alt="">
-      </button>
-
-      <!-- Dropdown -->
-      <div x-show="open" @click.outside="open = false" class="absolute top-8 right-1 bg-white border rounded shadow-md w-24 py-2 z-50">
-        <a href="{% url 'customer_profile' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Profile</a>
-        <a href="{% url 'logout' %}" class="block px-4 py-2 text-sm text-red-600 hover:bg-gray-100">Logout</a>
-      </div>
+            <div class="relative">
+                <button @click="open = !open" class="focus:outline-none">
+                    <img src="{% static 'images/user.png' %}" alt="Profile" class="w-6 h-6">
+                </button>
+                <div x-show="open" @click.outside="open = false"
+                     class="absolute right-0 mt-2 w-28 bg-cardDark border border-borderDark rounded shadow z-10">
+                    <a href="{% url 'customer_profile' %}" class="block px-4 py-2 text-sm hover:bg-gray-700">Profile</a>
+                    <a href="{% url 'logout' %}" class="block px-4 py-2 text-sm text-red-400 hover:bg-gray-700">Logout</a>
+                </div>
+            </div>
+        </div>
     </div>
-  </div>
 </nav>
 
+<!-- Hero Section -->
+<section class="relative bg-cover bg-center h-96" style='background-image: url("{% static 'images/bg2.avif' %}");'>
+    <div class="absolute inset-0 bg-black opacity-70"></div>
+    <div class="container mx-auto text-center text-white relative z-10 py-24">
+        <h1 class="text-4xl font-bold mb-4">Discover Your Perfect Product</h1>
+        <p class="text-lg mb-6">Browse through our exclusive collection of top-rated items.</p>
+        <a href="#products" class="bg-primary hover:bg-violet-600 text-white py-2 px-6 rounded-full text-lg">Shop Now</a>
+    </div>
+</section>
 
-    <main class="flex-grow px-4 py-6">
-  <div class="flex flex-col md:flex-row gap-6">
+<!-- Main -->
+<main class="container mx-auto px-6 py-10 grid grid-cols-1 md:grid-cols-4 gap-10">
 
     <!-- Sidebar -->
-    <aside class="w-full md:w-1/4 lg:w-1/5 space-y-6">
-      <form method="get" action="{% url 'index' %}" class="relative border shadow-lg rounded-xl border-gray-300 bg-white">
-        <input  
-          placeholder="Search..."
-          class="rounded-xl w-full px-5 py-3 transition-all outline-none"
-          name="search"
-          type="search"
-          value="{{ request.GET.search|default:'' }}"
-        />
-        <button type="submit" class="absolute top-3 right-3 text-gray-500">
-          <svg class="w-6 h-6" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" fill="none">
-            <path
-              d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"
-              stroke-linejoin="round"
-              stroke-linecap="round"
-            ></path>
-          </svg>
-        </button>
-      </form>
+    <aside class="space-y-8 md:col-span-1">
+        <!-- Search -->
+        <form method="get" action="{% url 'index' %}" class="bg-cardDark p-4 rounded-lg shadow">
+            <input type="search" name="search" placeholder="Search products..."
+                   value="{{ request.GET.search|default:'' }}"
+                   class="w-full px-4 py-2 bg-gray-900 border border-borderDark text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">
+            <button type="submit" class="mt-2 w-full bg-primary text-white py-2 rounded hover:bg-violet-600">Search</button>
+        </form>
 
-      <div>
-        <h2 class="text-2xl font-bold mb-4 text-slate-700">Categories</h2>
-        <ul class="bg-white shadow rounded p-4 space-y-2">
-          <li>
-            <a href="{% url 'index' %}" class="text-blue-600 hover:underline">All</a>
-          </li>
-          {% for category in categories %}
-          <li>
-            <a href="{% url 'index' %}?category={{ category.id }}" class="text-blue-600 hover:underline">{{ category.c_name }}</a>
-          </li>
-          {% empty %}
-          <li>No categories found.</li>
-          {% endfor %}
-        </ul>
-      </div>
+        <!-- Categories -->
+        <div class="bg-cardDark p-4 rounded-lg shadow">
+            <h2 class="text-lg font-semibold mb-4 text-white">Categories</h2>
+            <ul class="space-y-2">
+                <li><a href="{% url 'index' %}" class="text-primary hover:underline">All</a></li>
+                {% for category in categories %}
+                <li>
+                    <a href="?category={{ category.id }}"
+                       class="hover:underline {% if selected_category == category.id %}text-primary font-semibold{% endif %}">
+                        {{ category.c_name }}
+                    </a>
+                </li>
+                {% empty %}
+                <li class="text-gray-500">No categories found.</li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <!-- Pagination (below categories) -->
+        <div class="flex justify-center items-center mt-6 space-x-4 text-sm text-gray-400">
+            {% if page_obj.has_previous %}
+                <a href="?page={{ page_obj.previous_page_number }}{% if selected_category %}&category={{ selected_category }}{% endif %}"
+                   class="px-3 py-1 bg-gray-700 hover:bg-gray-600 rounded">Previous</a>
+            {% endif %}
+            <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+            {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}{% if selected_category %}&category={{ selected_category }}{% endif %}"
+                   class="px-3 py-1 bg-gray-700 hover:bg-gray-600 rounded">Next</a>
+            {% endif %}
+        </div>
     </aside>
 
-    <!-- Product Grid -->
-    <section class="w-full md:w-3/4 lg:w-4/5">
-      <h2 class="text-2xl font-bold mb-4 text-slate-700">Products</h2>
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {% for product in products %}
-        <a href="./product/{{product.pk}}" class="bg-white shadow rounded p-4 flex flex-col transition duration-300 hover:scale-105">
-          {% if product.p_image %}
-            <img src="{{ product.p_image.url }}" alt="{{ product.p_name }}" class="mb-4 rounded h-48 object-cover">
-          {% else %}
-            <div class="bg-gray-200 h-48 mb-4 rounded flex items-center justify-center text-gray-500">No Image</div>
-          {% endif %}
-          <h3 class="text-lg font-semibold">{{ product.p_name }}</h3>
-          <p class="text-gray-600 mb-2">Category: {{ product.category.c_name }}</p>
-          <p class="font-bold text-green-600">${{ product.p_price }}</p>
-        </a>
-        {% empty %}
-        <p>No products available.</p>
-        {% endfor %}
-      </div>
-    </section>
+    <!-- Products -->
+    <section class="md:col-span-3" id="products">
+        <h2 class="text-2xl font-bold mb-6 text-white">Products</h2>
 
-  </div>
+        {% if products %}
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {% for product in products %}
+            <a href="{% url 'product_detail' product.pk %}"
+               class="bg-cardDark p-4 rounded-lg shadow hover:shadow-xl transition hover:scale-[1.02]">
+                {% if product.p_image %}
+                <img src="{{ product.p_image.url }}" alt="{{ product.p_name }}"
+                     class="h-48 w-full object-contain mb-4 rounded">
+                {% else %}
+                <div class="h-48 flex items-center justify-center bg-gray-700 text-gray-400 mb-4 rounded">
+                    No Image
+                </div>
+                {% endif %}
+                <h3 class="text-lg font-semibold text-white">{{ product.p_name }}</h3>
+                <p class="text-sm text-gray-400 mb-1">Category: {{ product.category.c_name }}</p>
+                <p class="text-emerald-400 font-bold">₹{{ product.p_price }}</p>
+            </a>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="text-gray-400 mt-8">No products available.</p>
+        {% endif %}
+    </section>
 </main>
 
+<!-- Promo Section -->
+<section class="relative bg-cover bg-no-repeat bg-black bg-bottom h-80 mt-20" style='background-image: url("{% static 'images/promo-bg.avif' %}");'>
+    <div class="absolute inset-0 bg-black opacity-70"></div>
+    <div class="container mx-auto relative z-10 text-white text-center py-16 px-6">
+        <h2 class="text-3xl font-bold mb-4">Exclusive Summer Sale</h2>
+        <p class="text-lg mb-6">Up to 50% off on selected products. Limited time only!</p>
+        <a href="#products" class="bg-white text-primary px-6 py-2 rounded-full font-semibold hover:bg-gray-100">
+            Browse Deals
+        </a>
+    </div>
+</section>
 
-    {% include 'partials/footer.html' %}
+<!-- Featured Categories Section -->
+<section class="container mx-auto px-6 py-20">
+    <h2 class="text-2xl font-bold text-center mb-10 text-white">Shop by Category</h2>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for category in categories|slice:":3" %}
+        <a href="?category={{ category.id }}" class="relative h-64 rounded-lg overflow-hidden shadow-lg group">
+            <img src="{% static 'images/category.avif' %}" alt="{{ category.c_name }}"
+                 class="w-full h-full object-cover transition group-hover:scale-105 duration-300">
+            <div class="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+                <span class="text-white text-xl font-semibold">{{ category.c_name }}</span>
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+</section>
 
-</body> 
+<!-- Footer -->
+{% include 'partials/footer.html' %}
+</body>
 </html>
