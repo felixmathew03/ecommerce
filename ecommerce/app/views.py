@@ -521,6 +521,7 @@ def edit_address(request, address_id):
             address.save()
 
             success = f"Address '{address.address_line1}' updated successfully."
+            return redirect('view_address', customer_id=customer.id)
 
     return render(request, 'edit_address.html', {
         'address': address,

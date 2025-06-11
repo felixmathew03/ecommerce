@@ -3,13 +3,13 @@
 {% block title %} Order Confirmation - Shopy{% endblock %}
 
 {% block content %}
-    <div class="max-w-3xl my-5 mx-auto bg-white rounded shadow p-6">
-        <h1 class="text-3xl font-bold text-green-600 mb-4">Thank you for your order!</h1>
+    <div class="max-w-3xl my-5 mx-auto bg-gray-800 rounded shadow p-6">
+        <h1 class="text-3xl font-bold text-green-500 mb-4">Thank you for your order!</h1>
         
-        <p class="mb-4">Your order was placed successfully on <strong>{{ order.created_at|date:"F j, Y, g:i a" }}</strong>.</p>
+        <p class="mb-4 text-gray-400">Your order was placed successfully on <strong>{{ order.created_at|date:"F j, Y, g:i a" }}</strong>.</p>
 
-        <h2 class="text-xl font-semibold mb-2">Order Summary:</h2>
-        <div class="border rounded p-4 mb-6">
+        <h2 class="text-xl font-semibold mb-2 text-gray-400">Order Summary:</h2>
+        <div class="border border-gray-500 rounded p-4 mb-6">
             <ul class="divide-y divide-gray-200">
                 {% for item in order.items.all %}
                 <li class="py-4 flex items-center justify-between space-x-4">
@@ -19,7 +19,7 @@
                         <img src="{{ item.product.p_image.url }}" alt="{{ item.product.p_name }}" class="w-16 h-16 object-cover rounded">
                         {% endif %}
                         <div class="">
-                            <p class="font-semibold text-gray-800">{{ item.product.p_name }}</p>
+                            <p class="font-semibold text-gray-400">{{ item.product.p_name }}</p>
                             <p class="text-sm text-gray-500">Unit Price: ₹{{ item.price_at_order }}</p>
                             <p class="text-sm text-gray-500">Quantity: {{ item.quantity }}</p>
                             <p class="text-sm text-gray-500">Subtotal: ₹{{ item.get_total_price }}</p>
@@ -32,14 +32,14 @@
                 {% endfor %}
             </ul>
 
-            <div class="mt-6 flex justify-between font-semibold text-lg">
+            <div class="mt-6 flex justify-between font-semibold text-lg text-gray-400">
                 <span>Total:</span>
                 <span>₹{{ order.get_total_price }}</span>
             </div>
         </div>
 
 
-        <p class="mb-6">Status: <span class="font-medium 
+        <p class="mb-6 text-gray-400">Status: <span class="font-medium 
             {% if order.get_status_display == 'Processing' %}text-yellow-500
                             {% elif order.get_status_display == 'Packed' %} text-orange-500
                             {% elif order.get_status_display == 'Shipped' %}text-blue-500
